@@ -1,0 +1,47 @@
+lvs-DR
+
+ vip dip rip
+
+Director
+eth0 192.168.112. VIP
+lo:0 192.168.112.61  DIP
+
+RS1
+eth0 192.168.112.123 RIP
+lo:0 192.168.112.247 VIP
+
+RS2
+eth0 192.168.112.252 RIP
+lo:0 192.168.112.247 VIP
+
+----NAT 待办
+Director
+ifconfig eth0:0 192.168.112.247/24 broadcast 192.168.112.247
+
+RS1
+vim /etc/sysconfig/network-scripts/ifcfg-lo:0
+    DEVICE=lo:0
+    ONBOOT=yes
+    BOOTPROTO=static
+    IPADDR=192.168.112.247
+    NETMASK=255.255.255.0
+    GATEWAY=192.168.112.1
+
+    director
+    192.168.112.72
+    192.168.112.61
+    yum -y install ipvsadm
+
+    cat /proc/sys/net/ipv4/ip_forward
+    vim /etc/sysctl.conf
+      net.ipv4.ip_forward = 1
+    sysctl -p
+
+    ipvsadm -A -t 192.168.112.72:80 -s rr
+    ipvsadm -L -n
+    ipvsadm -a -t 192.168.112.72:80 -r 192.168.112.252 -m
+    ipvsadm -a -t 192.168.112.72:80 -r 192.168.112.247 -m
+    ipvsadm -S > /etc/sysconfig/ipvsadm 保存到文件
+    ipvsadm -C #清空
+    ipvsadm -R < /etc/sysconfig/ipvsadm #重载
+    ipvsadm -E -t 192.168.112.61:80 -s sh #修改 #将来自于同一个IP的请求始终调度至同一RS

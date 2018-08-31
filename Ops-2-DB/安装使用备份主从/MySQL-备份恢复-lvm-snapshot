@@ -1,0 +1,47 @@
+lvm-snapshot：基于LVM快照的备份
+	1、事务日志跟数据文件必须在同一个卷上；
+	2、创建快照卷之前，要请求MySQL的全局锁；在快照创建完成之后释放锁；
+	3、请求全局锁完成之后，做一次日志滚动；做二进制日志文件及位置标记(手动进行)；
+
+	备份步骤：
+	1、请求全局锁，并滚动日志
+	mysql> FLUSH TABLES WITH READ LOCK;
+
+
+	2、记录二进制文件及事件位置(手动进行)；
+  mysql> FLUSH LOGS;
+  msyql> SHOW MASTER STATUS;
+
+    or
+
+  mysql -e 'show master status' > /path/to/somefile
+
+	3、创建快照卷
+	# lvcreate -L  -s -n  -p r  /path/to/some_lv
+  #[root@Xcz155 ~]# lvcreate -L 500M -s -n mydata-snap -p r /dev/myvg/mydata
+
+	4、释放全局锁
+	mysql> UNLOCK TABLES;
+
+	5、挂载快照卷并备份数据
+  mount -r /dev/myvg/mydata-snap /mnt
+	# cp -a mysql/ /tmp
+  # cp -a binlog/ /tmp
+
+	6、备份完成之后，删除快照卷
+
+  7、制定好策略，通过原卷备份二进制日志；
+
+	恢复：
+  cp -a /tmp/mysql/* /data/mysql/
+  cat pos-20... (master status)
+    如：mysql-bin.0000004 245
+  cd /tmp/binlogs/
+  mysqlbinlog --start-position=245 mysql-bin.000004 > binlog.mysql
+
+	1、二进制日志保存好；
+		提取备份之后的所有事件至某sql脚本中；
+	2、还原数据，修改权限及属主属组等，并启动mysql
+	3、做即时点还原
+
+	mylvbackup: perl脚本，快速基于Lvm备份mysql

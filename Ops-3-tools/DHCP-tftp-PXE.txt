@@ -1,0 +1,120 @@
+DHCP:
+
+	DHCP: Dynamic Host Configuration Protocol  # 动态主机配置协议
+
+		IP/Netmask
+		Gateway
+		DNS Server
+
+	bootp: boot protocol --> dhcp   # bootp 引导协议 dhcp的前身
+		租约：
+			2hours:
+				50%: 1hours --> 2hours
+					50%：1hours --> 2hours
+						75%: 0.5hours --> 2hours
+							87.5%: 0.25hours --> 2hours
+
+				dhcp discover
+
+
+		1、Client: dhcp discover：发现
+		2、Server: dhcp offer：(IP/netmask, gw)
+		3、Client：dhcp request
+		4、Server: dhcp ack
+
+		续租：
+			Client: dhcp request
+			Server: dhcp ack
+
+			Server: dhcp nak 	#服务端拒绝
+
+		Linux DHCP协议的实现程序：dhcp, dnsmasq(轻量级 能提供dns和dhcp )
+
+		dhcp: 两个进程  不能同时启动
+			/usr/sbin/dhcpd #
+				/etc/dhcp/dhcpd.conf --> /etc/rc.d/init.d/dhcpd   #ipv4
+				/etc/dhcp/dhcpd6.conf --> /etc/rc.d/init.d/dhcpd6  #ipv6
+
+			/usr/sbin/dhcrelay #中继器
+				/etc/rc.d/init.d/dhcrelay
+
+			67/udp
+			dhclient: 68/udp
+
+		dhcpd.conf:
+			subnet {  # 定义一个子网
+				...
+			}
+
+			host {  # 为某个主机保留
+
+			}
+
+		~]# cat /var/lib/dhcpd/dhcpd.leases
+			地址分配记录
+
+		其它配置选项：
+			filename: 指明引导文件名称；
+			next-server：提供引导文件的服务器IP地址；
+
+			filename "pxelinux.0";
+			next-server 172.16.100.67;
+
+			#dhclient -d 前台 手动获取dhcp地址
+
+	PXE：preboot execute environment, Intel  预启动执行环境
+		dhcp, tftp, file server(yum repository)
+
+      #tftp Trivial File Transfer Protocol 简单文件传输协议
+      # 服务端 tftp-server 客户端 tftp
+
+
+	CentOS 6 PXE:
+
+		yum -y install syslinux tftp-server
+		cp /usr/share/syslinux/pxelinux.0 /var/lib/tftpboot/
+		cp /media/cdrom/images/pxelinux/{vmlinuz,initrd.img} /var/lib/tftp/boot/
+		cp /media/cdrom/isolinux/{boot.cfg,vesamenu.c32,splash.png} /var/lib/tftp/boot/
+		mkdir /var/lib/tftpboot/pxelinux.cfg/
+		cp /media/cdrom/isolinux/isolinux.cfg /var/lib/tftpboot/pxelinux.cfg/default/
+
+	CentOS 7 PXE:
+		yum -y install syslinux tftp-server
+        # 挂载镜像
+        # mount -r /dev/cdrom /media/cdrom
+        # cd /media/cdrom
+		cp /usr/share/syslinux/pxelinux.0 /var/lib/tftpboot/
+		cp /media/cdrom/images/pxelinux/{vmlinuz,initrd.img} /var/lib/tftp/boot/
+		cp /usr/share/syslinux/{chain.c32,mboot.c32,menu.c32,memdisk} /var/lib/tftpboot/
+		mkdir /var/lib/tftpboot/pxelinux.cfg/
+
+		创建/var/lib/tftpboot/pxelinux.cfg/default
+			内容类似如下：
+
+			default menu.c32
+			  prompt 5
+			  timeout 30
+			  MENU TITLE CentOS 7 PXE Menu
+
+			  LABEL linux
+			  MENU LABEL Install CentOS 7 x86_64
+			  KERNEL vmlinuz
+			  APPEND initrd=initrd.img inst.repo=http://172.16.100.67/centos7 ks=http://172.16.100.67/centos7.cfg
+
+
+        #vim /etc/dhcp/dhcpd.conf
+        #restart dhcp
+        创建虚拟机 稍后安装
+        调整为vmnet2  跟刚才dhcp服务器在同一网络中
+        启动
+
+        ##
+          httpd
+          mkdir /var/www/html/centos7
+          mount --bind /media/cdrom/ /var/www/html/centos7
+          wget -O /var/www/html/centos7.cfg http://...../centos7.cfg
+          vim centos7.cfg
+            Use network installation
+            url --url='http://192.168.112.本机/centos7'
+          vim /var/lib/tftpboot/pxelinux.cfg/default
+            quiet 后跟 ks=http://192.168.112.benji/centos7.cfg

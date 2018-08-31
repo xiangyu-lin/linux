@@ -1,0 +1,1451 @@
+<!DOCTYPE html><html><head><title>srs参考文档</title><meta charset='utf-8'><link href='https://dn-maxiang.qbox.me/res-min/themes/marxico.css' rel='stylesheet'><style></style></head><body><div id='preview-contents' class='note-content'>
+                        
+                    
+
+<div><div class="toc"><div class="toc">
+<ul>
+<li><a href="#srs参考文档">srs参考文档</a><ul>
+<li><a href="#usage">USAGE</a><ul>
+<li><a href="#centos6-epel源rpmfusion源srs下载">centos6 epel源，rpmfusion源，srs下载</a></li>
+</ul>
+</li>
+<li><a href="#分发方式比较-rtmp-pk-http">分发方式比较 RTMP PK HTTP</a><ul>
+<li><a href="#rtmp">RTMP</a></li>
+<li><a href="#http">HTTP</a></li>
+<li><a href="#hls">HLS</a></li>
+<li><a href="#应用方式">应用方式</a></li>
+</ul>
+</li>
+<li><a href="#rtmp部署实例">RTMP部署实例</a></li>
+<li><a href="#分发rtmp流">分发RTMP流</a><ul>
+<li><a href="#应用场景">应用场景</a></li>
+<li><a href="#flashrtmp">FlashRTMP</a></li>
+<li><a href="#配置rtmp流">配置RTMP流</a></li>
+<li><a href="#推送rtmp">推送RTMP</a></li>
+<li><a href="#观看rtmp流">观看RTMP流</a></li>
+<li><a href="#rtmp流的低延时配置">RTMP流的低延时配置</a></li>
+</ul>
+</li>
+<li><a href="#rtmp的urlvhost规则">RTMP的URL/Vhost规则</a><ul>
+<li><a href="#应用场景-1">应用场景</a></li>
+<li><a href="#标准rtmp-url">标准RTMP URL</a></li>
+<li><a href="#novhost">NoVhost</a></li>
+<li><a href="#vhost的应用">Vhost的应用</a></li>
+<li><a href="#vhost支持多用户">Vhost支持多用户</a></li>
+<li><a href="#vhost域名调度">Vhost域名调度</a></li>
+<li><a href="#vhost支持多配置">Vhost支持多配置</a></li>
+<li><a href="#defaultvhost">__defaultVhost__</a></li>
+<li><a href="#访问指定的vhost-重要">访问指定的Vhost (重要)</a></li>
+<li><a href="#fmle的奇怪url方式">FMLE的奇怪URL方式</a></li>
+<li><a href="#rtmp-url参数">RTMP URL参数</a></li>
+<li><a href="#srs的url规则">SRS的URL规则</a></li>
+<li><a href="#srs的vhost">SRS的Vhost</a></li>
+</ul>
+</li>
+<li><a href="#低延时直播应用">低延时直播应用</a><ul>
+<li><a href="#应用场景-2">应用场景</a></li>
+<li><a href="#rtmp和延时">RTMP和延时</a></li>
+<li><a href="#hls低延时">HLS低延时</a></li>
+<li><a href="#rtmp延时的测量">RTMP延时的测量</a></li>
+<li><a href="#gop-cache">GOP-Cache</a></li>
+<li><a href="#累积延迟">累积延迟</a></li>
+<li><a href="#低延时配置">低延时配置</a></li>
+</ul>
+</li>
+<li><a href="#hls部署实例">HLS部署实例</a><ul>
+<li><a href="#qa">Q&amp;A</a><ul>
+<li><a href="#rtmp流能看hls看不了">RTMP流能看，HLS看不了</a></li>
+<li><a href="#rtmp流内容和hls流内容不一致">RTMP流内容和HLS流内容不一致</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#delivery-hls">Delivery HLS</a><ul>
+<li><a href="#应用场景-3">应用场景</a></li>
+<li><a href="#delivering-streams">Delivering Streams</a></li>
+<li><a href="#hls-introduction">HLS Introduction</a></li>
+<li><a href="#hls-工作流程">HLS 工作流程</a></li>
+<li><a href="#hls-配置">HLS 配置</a></li>
+<li><a href="#hlsaudioonly">HLSAudioOnly</a></li>
+<li><a href="#hls-and-forward">HLS And Forward</a></li>
+<li><a href="#hls-and-transcode">HLS And Transcode</a></li>
+<li><a href="#hls-multiple-bitrate">HLS Multiple Bitrate</a></li>
+<li><a href="#hls-m3u8-examples">HLS M3u8 Examples</a></li>
+<li><a href="#srs-how-to-support-hls">SRS How to Support HLS</a></li>
+</ul>
+</li>
+<li><a href="#ffmpeg-live-streaming-transcode">FFMPEG – Live Streaming Transcode</a><ul>
+<li><a href="#use-scenario">Use Scenario</a></li>
+<li><a href="#workflow">Workflow</a></li>
+<li><a href="#transcode-config">Transcode Config</a></li>
+<li><a href="#transcode-rulers">Transcode Rulers</a></li>
+<li><a href="#ffmpeg-log-path">FFMPEG Log Path</a></li>
+<li><a href="#copy-without-transcode">Copy Without Transcode</a></li>
+<li><a href="#drop-video-or-audio">Drop Video or Audio</a></li>
+<li><a href="#other-transcode-config">Other Transcode Config</a></li>
+<li><a href="#transcode-on-arm-cpu">Transcode on ARM cpu</a></li>
+<li><a href="#ffmpeg-transcode-the-stream-by-flash-encoder">FFMPEG Transcode the Stream by Flash encoder</a></li>
+<li><a href="#ffmpeg">FFMPEG</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+</div>
+
+<h1 id="srs参考文档">srs参考文档</h1>
+
+<h2 id="usage"><a href="https://github.com/ossrs/srs/tree/1.0release#usage" target="_blank">USAGE</a></h2>
+
+<p><a href="https://github.com/ossrs/srs/wiki/v1_CN_SampleRTMP" target="_blank">RTMP部署实例</a> <br>
+<a href="https://github.com/ossrs/srs/wiki/v1_CN_SampleHLS" target="_blank">HLS部署实例</a> <br>
+<a href="https://github.com/ossrs/srs/wiki/v1_CN_SampleTranscode2HLS" target="_blank">转码后分发HLS部署实例</a> <br>
+<a href="https://github.com/ossrs/srs/wiki/v1_CN_SampleFFMPEG" target="_blank">FFMPEG转码部署实例</a> <br>
+<a href="https://github.com/ossrs/srs/wiki/v1_CN_SampleForward" target="_blank">RTMP流转发（Forward）部署实例</a> <br>
+<a href="https://github.com/ossrs/srs/wiki/v1_CN_SampleRealtime" target="_blank">RTMP低延时配置</a> <br>
+<a href="https://github.com/ossrs/srs/wiki/v1_CN_SampleARM" target="_blank">ARM上部署SRS实例</a> <br>
+<a href="https://github.com/ossrs/srs/wiki/v1_CN_SampleIngest" target="_blank">Ingest采集实例</a> <br>
+<a href="https://github.com/ossrs/srs/wiki/v1_CN_SampleHTTP" target="_blank">SRS-HTTP服务部署实例</a> <br>
+<a href="https://github.com/ossrs/srs/wiki/v1_CN_SampleDemo" target="_blank">Demo的部署</a> <br>
+<a href="https://github.com/ossrs/srs/wiki/v1_CN_Sample" target="_blank">SRS真实的应用实例</a> <br>
+<a href="https://github.com/ossrs/srs/wiki/v1_CN_Product" target="_blank">SRS产品规划</a></p>
+
+<hr>
+
+<h3 id="centos6-epel源rpmfusion源srs下载">centos6 epel源，rpmfusion源，srs下载</h3>
+
+<blockquote>
+  <p>centos 6.8 <br>
+  ffmpeg 安装可能用到的源：<a href="http://rpmfusion.org/" target="_blank">http://rpmfusion.org/</a> <br>
+  rpmfusion源需要安装epel源 </p>
+  
+  <ol><li rel="1">wget -O /etc/yum.repos.d/epel.repo <a href="http://mirrors.aliyun.com/repo/epel-6.repo" target="_blank">http://mirrors.aliyun.com/repo/epel-6.repo</a></li>
+  <li rel="2"><a href="http://download1.rpmfusion.org/nonfree/el/updates/6/x86_64/rpmfusion-nonfree-release-6-1.noarch.rpm" target="_blank">http://download1.rpmfusion.org/nonfree/el/updates/6/x86_64/rpmfusion-nonfree-release-6-1.noarch.rpm</a></li>
+  <li rel="3"><a href="http://download1.rpmfusion.org/free/el/updates/6/x86_64/rpmfusion-free-release-6-1.noarch.rpm" target="_blank">http://download1.rpmfusion.org/free/el/updates/6/x86_64/rpmfusion-free-release-6-1.noarch.rpm</a></li>
+  </ol>
+  
+  <p>SRS版本下载列表 <br>
+  <a href="http://winlinvip.github.io/srs.release/releases/" target="_blank">srs-release</a></p>
+</blockquote>
+
+<hr>
+
+<h2 id="分发方式比较-rtmp-pk-http">分发方式比较 RTMP PK HTTP</h2>
+
+<p>互联网上的两种主要的分发方式：HLS和RTMP，什么时候用谁，完全决定于应用场景。</p>
+
+<p>还有其他的分发方式，这些分发方式不属于互联网常见和通用的方式，不予以比较：</p>
+
+<ul><li>UDP：譬如YY的实时应用，视频会议等等，或者RTSP之类。这类应用的特点就是实时性要求特别高，以毫秒计算。TCP家族协议根本就满足不了要求，所以HTTP/TCP都不靠谱。这类应用没有通用的方案，必须自己实现分发（服务端）和播放（客户端）。</li>
+<li>P2P：譬如RTMFP或者各家自己的协议。这类应用的特点是节省带宽。目前PC/flash上的RTMFP比较成熟，Android上的P2P属于起步群雄纷争标准不一，IOS上P2P应该没有听说过。</li>
+<li>RTSP：这种不是互联网上的主要应用，在其他领域譬如安防等有广泛应用。</li>
+</ul>
+
+<p>另外，HTTP的也分为几种：</p>
+
+<ul><li>HTTP progressive：早期流媒体服务器分发http文件时，以普通的http文件分发，这种叫做渐进式下载，意思就是如果文件很大譬如1小时时长1GB大小，想从中间开始播放是不行的。但这种方式已经是作古了，很多http服务器支持http文件的seek，就是从中间开始播放。</li>
+<li>HTTP stream：支持seek的HTTP流，譬如各家视频网站的点播分发方式。或者稍微复杂点的，譬如把一个大文件切几段之后分发。目前在pc/flash上点播国内的主流分发是这种方式。</li>
+<li>HLS：这种是现在适配方式最广（除了flash, 需要额外的as库支持），在PC上有vlc，Android/IOS原生播放器就支持播放HLS，HTML5里面的url可以写HLS地址。总之，在移动端是以HLS为主。</li>
+<li>HDS：adobe自己的HLS，一坨屎。</li>
+<li>DASH：各家提出的HLS，目前还没有广泛应用。</li>
+</ul>
+
+<p>对比以下互联网上用的流媒体分发方式：</p>
+
+<ul><li>HLS：apple的HLS，支持点播和直播。</li>
+<li>HTTP：即HTTP stream，各家自己定义的http流，应用于国内点播视频网站。</li>
+<li>RTMP：直播应用，对实时性有一定要求，以PC为主。</li>
+</ul>
+
+
+
+<h3 id="rtmp">RTMP</h3>
+
+<p>RTMP本质上是流协议，主要的优势是：</p>
+
+<ul><li>实时性高：RTMP的实时性在3秒之内，经过多层CDN节点分发后，实时性也在3秒左右。在一些实时性有要求的应用中以RTMP为主。</li>
+<li>支持加密：RTMPE和RTMPS为加密协议。虽然HLS也有加密，但在PC平台上flash对RTMPE/RTMPS支持应该比较不错。</li>
+<li>稳定性高：在PC平台上flash播放的最稳定方式是RTMP，如果做CDN或者大中型集群分发，选择稳定性高的协议一定是必要的。HTTP也很稳定，但HTTP是在协议上稳定；稳定性不只是服务端的事情，在集群分发，服务器管理，主备切换，客户端的支持上，RTMP在PC分发这种方式上还是很有优势。</li>
+<li>编码器接入：编码器输出到互联网（还可以输出为udp组播之类广电应用），主要是RTMP。譬如专业编码器，或者flash网页编码器，或者FMLE，或者ffmpeg，或者安防摄像头，都支持RTMP输出。若需要接入多种设备，譬如提供云服务；或者希望网页直接采集摄像头；或者能在不同编码器之间切换，那么RTMP作为服务器的输入协议会是最好的选择。</li>
+<li>系统容错：容错有很多种级别，RTMP的集群实现时可以指定N上层，在错误时切换不会影响到下层或者客户端，另外RTMP的流没有标识，切到其他的服务器的流也可以继续播放。HLS的流热备切换没有这么容易。若对于直播的容错要求高，譬如降低出问题的概率，选择RTMP会是很好的选择。</li>
+<li>可监控：在监控系统或者运维系统的角度看，流协议应该比较合适监控。HTTP的流监控感觉没有那么完善。这个不算绝对优势，但比较有利。</li>
+</ul>
+
+<p>RTMP的劣势是：</p>
+
+<ul><li>协议复杂：RTMP协议比起HTTP复杂很多，导致性能低下。测试发现两台服务器直连100Gbps网络中，HTTP能跑到60Gbps，但是RTMP只能跑到10Gbps，CPU占用率RTMP要高很多。复杂协议导致在研发，扩展，维护软件系统时都没有HTTP那么方便，所以HTTP服务器现在大行其道，apache/nginx/tomcat，N多HTTP服务器；而RTMP协议虽然早就公开，但是真正在大规模中分发表现良好的没有，adobe自己的FMS在CDN中都经常出问题。</li>
+<li>Cache麻烦：流协议做缓存不方便。譬如点播，若做RTMP流协议，边缘缓存RTMP会很麻烦。如果是HTTP，缓存其实也很麻烦，但是HTTP服务器的缓存已经做了很久，所以只需要使用就好。这是为何点播都走HTTP的原因。</li>
+</ul>
+
+
+
+<h3 id="http">HTTP</h3>
+
+<p>HTTP说的是HTTP流，譬如各大视频网站的点播流。</p>
+
+<p>HTTP本质上还是文件分发，主要的优势是：</p>
+
+<ul><li>性能很高：HTTP的性能没得说，协议简单，各种HTTP高性能服务器也完善。如果分发的量特别大，譬如点播视频网站，没有直播的实时性要求，HTTP协议是最好选择。</li>
+<li>没有碎片：HTTP比HLS没有碎片，HTTP分发大文件会比小文件分发方便很多。特别是存储，小文件的性能超低，是个硬伤。</li>
+<li>穿墙：互联网不可能不开放HTTP协议，否则就不叫互联网。所以任何端口封掉，也不会导致HTTP流看不了。（不过RTMP也能穿墙，用RTMPT协议）。</li>
+</ul>
+
+<p>HTTP的劣势是：</p>
+
+<ul><li>实时性差：基本上没有实时性这个说法。</li>
+<li>原生支持不好：就PC上flash对于HTTP流支持还可以，Android/IOS上似乎只能mp4，总之移动端对于HTTP的支持不是很完善。</li>
+</ul>
+
+
+
+<h3 id="hls">HLS</h3>
+
+<p>HLS是Apple的开放标准，在Android3?以上也原生支持.</p>
+
+<p>HLS的主要优势是：</p>
+
+<ul><li>性能高：和HTTP一样。</li>
+<li>穿墙：和HTTP一样。</li>
+<li>原生支持很好：IOS上支持完美。Android上支持差些。PC/flash上现在也有各种as插件支持HLS。</li>
+</ul>
+
+<p>HLS的主要劣势是：</p>
+
+<ul><li>实时性差：基本上HLS的延迟在10秒以上。</li>
+<li>文件碎片：若分发HLS，码流低，切片较小时，小文件分发不是很友好。特别是一些对存储比较敏感的情况，譬如源站的存储，嵌入式的SD卡。</li>
+</ul>
+
+
+
+<h3 id="应用方式">应用方式</h3>
+
+<p>参考<a href="https://github.com/ossrs/srs/wiki/v1_CN_DeliveryHLS" target="_blank">HTTP</a>和<a href="https://github.com/ossrs/srs/wiki/v1_CN_DeliveryRTMP" target="_blank">RTMP</a></p>
+
+<p>推荐的方式是：</p>
+
+<ul><li>编码器输出RTMP协议。</li>
+<li>流媒体系统接入使用RTMP协议。</li>
+<li>流媒体系统内部直播分发使用RTMP。</li>
+<li>PC+直播+实时性要求高：使用flash播放RTMP。</li>
+<li>PC+直播+没有实时性要求：使用RTMP或者HLS均可。</li>
+<li>PC+点播：使用HTTP或者HLS。</li>
+<li>Apple IOS/OSX：都使用HLS（实时性要求高得自己解析RTMP，或者使用外部库，譬如<a href="https://www.vitamio.org" target="_blank">https://www.vitamio.org</a>）</li>
+<li>Andorid：和IOS一样，不过可以确定的是可以自己开发支持RTMP。</li>
+</ul>
+
+<hr>
+
+<h2 id="rtmp部署实例">RTMP部署实例</h2>
+
+<ol><li rel="1">获取SRS。详细参考<a href="https://github.com/ossrs/srs/wiki/v1_CN_Git" target="_blank">GIT获取代码</a> <br>
+git clone <a href="https://github.com/ossrs/srs" target="_blank">https://github.com/ossrs/srs</a> <br>
+cd srs/trunk <br>
+<strong>原git已关闭可以forks 以下3个：</strong> <br>
+<a href="https://github.com/smartdu/srs" target="_blank">https://github.com/smartdu/srs</a> <br>
+<a href="https://github.com/wenjiegit/srs" target="_blank">https://github.com/wenjiegit/srs</a> <br>
+<a href="https://github.com/mbeacom/srs" target="_blank">https://github.com/mbeacom/srs</a></li>
+<li rel="2">编译    <a href="https://github.com/ossrs/srs/wiki/v1_CN_Build" target="_blank">build</a> <br>
+<code>./configure --disable-all --with-ssl &amp;&amp; make</code></li>
+<li rel="3"><p>配置文件    <a href="https://github.com/ossrs/srs/wiki/v1_CN_DeliveryRTMP" target="_blank">RTMP分发</a></p>
+
+<pre class="prettyprint hljs-dark"><code class="hljs nginx"><span class="hljs-comment"># conf/rtmp.conf</span><br><span class="hljs-title">listen</span>              <span class="hljs-number">1935</span>;<br><span class="hljs-title">max_connections</span>     <span class="hljs-number">1000</span>;<br><span class="hljs-title">vhost</span> __defaultVhost__ {<br>}<br></code></pre></li>
+<li rel="4">启动 <br>
+<code>./objs/srs -c conf/rtmp.conf</code></li>
+<li rel="5"><p>启动推流编码器</p>
+
+<pre class="prettyprint hljs-dark"><code class="hljs cpp"> <span class="hljs-keyword">for</span>((;;)); <span class="hljs-keyword">do</span> \<br>    ffmpeg -re -i /root/srs/trunk/doc/source<span class="hljs-number">.200</span>kbps<span class="hljs-number">.768</span>x320.flv -vcodec copy -acodec copy -f flv -y rtmp:<span class="hljs-comment">//192.168.115.46:1935/live/livestream ;\</span><br>    sleep <span class="hljs-number">1</span>; \<br>  done<br></code></pre></li>
+<li rel="6">观看RTMP流    <a href="https://github.com/ossrs/srs/wiki/v1_CN_RtmpUrlVhost" target="_blank">vhost规则</a> <br>
+RTMP流地址为：<code>rtmp://192.168.115.46:1935/live/livestream</code> <br>
+可以使用VLC观看。 <br>
+备注：请将所有实例的IP地址192.168.1.170都换成部署的服务器IP地址</li>
+</ol>
+
+<hr>
+
+<h2 id="分发rtmp流">分发RTMP流</h2>
+
+<p>SRS（Simple RTMP Server）分发RTMP是核心功能，srs的主要定位就是分发RTMP低延时流媒体，同时支持分发HLS流。</p>
+
+<p>RTMP和HLS的优势参考：<a href="https://github.com/ossrs/srs/wiki/v1_CN_DeliveryHLS" target="_blank">HLS</a></p>
+
+<p>RTMP和HLS的比较参考：<a href="https://github.com/ossrs/srs/wiki/v1_CN_RTMP.PK.HTTP" target="_blank">RTMP PK HLS</a></p>
+
+
+
+<h3 id="应用场景">应用场景</h3>
+
+<p>RTMP是PC-flash支持最完善的流分发方式，主要的应用场景包括：</p>
+
+<ul><li>无插件流媒体应用：十年前各种浏览器插件大行其道，最后adobe的flash一统天下，现在如何观看视频还需要用户装插件，已经是非常罕见的事情。打开浏览器就能用，不用装插件，这是RTMP的最基本的应用方式。</li>
+<li>适配广泛的播放器：如果没有专业的flash开发人员，那么RTMP会是个很好的选择，只要3行代码就能完成一个播放器，和html5的video标签一样方便。HDS/HLS在PC上，都需要库支持，N行代码很麻烦。</li>
+<li>苛刻的稳定性支持：RTMP服务器能365x24提供服务，当然http服务器也可以。客户端的稳定性呢？RTMP在flash中连续播放10天没有问题，flash如果播放HTTP流就真的很难讲。如果在PC上需要客户端长时间播放，稳定播放，选择RTMP会是最佳选择。</li>
+<li>稳定的较小延迟：RTMP延迟在0.8-3秒，能应用于交互式直播，视频会议，互动式直播等等。如果对延时有一定要求，就不要选择HLS，RTMP会是最佳选择。</li>
+<li>通用接入标准：RTMP是编码器到服务器的实际标准协议，所有编码器都支持RTMP推送流。选择RTMP作为直播接入协议，能适配多种编码器，不至于绑定到一种编码器。如果服务器只能接入HTTP FLV流，像某些公司做的私有协议，那么对接通用编码器就有问题。何必闭门造车？！绑定用户的方式在于良好的客户关系和优秀的软件质量，而不是上了贼船就下不了船了。</li>
+</ul>
+
+<p>SRS直播将RTMP作为基本协议，以各种方式转码为RTMP后输入到SRS，输出为RTMP和HLS，支持广泛的客户端和各种应用场景。</p>
+
+<p>SRS点播还在计划中，不会使用RTMP作为点播协议，点播还是文件为主，即HTTP协议为主。</p>
+
+
+
+<h3 id="flashrtmp">FlashRTMP</h3>
+
+<p>RTMP最初就是adobe在flash上的协议，flash播放RTMP只需要几行as代码：</p>
+
+<pre class="prettyprint hljs-dark"><code class="hljs actionscript"><span class="hljs-keyword">var</span> conn = <span class="hljs-keyword">new</span> NetConnection();<br><span class="hljs-keyword">var</span> stream = <span class="hljs-keyword">new</span> NetStream(conn);<br><span class="hljs-keyword">var</span> video = <span class="hljs-keyword">new</span> Video();<br><span class="hljs-keyword">this</span>.addChild(video);<br>video.attachNetStream(stream);<br>conn.connect(<span class="hljs-string">"rtmp://192.168.1.170/live"</span>);<br>stream.play(<span class="hljs-string">"livestream"</span>);<br></code></pre>
+
+
+
+<h3 id="配置rtmp流">配置RTMP流</h3>
+
+<p>SRS只需要配置vhost和侦听端口，以及支持的最大连接数，就可以支持RTMP：</p>
+
+<pre class="prettyprint hljs-dark"><code class="hljs nginx"><span class="hljs-title">listen</span>              <span class="hljs-number">1935</span>;<br><span class="hljs-title">max_connections</span>     <span class="hljs-number">1000</span>;<br><span class="hljs-title">vhost</span> __defaultVhost__ {<br>}<br></code></pre>
+
+<p>启动服务：<code>./objs/srs -c conf/rtmp.conf</code></p>
+
+
+
+<h3 id="推送rtmp">推送RTMP</h3>
+
+<p>可以使用支持RTMP输出的编码器，譬如FMLE。在FMS URL中输入vhost/app，在Stream中输入流名称。譬如：</p>
+
+<pre class="prettyprint hljs-dark"><code class="hljs cpp"><span class="hljs-preprocessor"># 譬如RTMP流：rtmp:<span class="hljs-comment">//192.168.1.170/live/livestream</span></span><br>FMS URL: rtmp:<span class="hljs-comment">//192.168.1.170/live</span><br>Stream: livestream<br></code></pre>
+
+<p>RTMP的URL规则，Vhost规则，请参考下面的RTMP的URL/Vhost规则 <br>
+观看RTMP流</p>
+
+
+
+<h3 id="观看rtmp流">观看RTMP流</h3>
+
+<p>可以使用支持RTMP流的播放器播放，譬如vlc/flash player，播放地址：rtmp://192.168.1.170/live/livestream</p>
+
+
+
+<h3 id="rtmp流的低延时配置">RTMP流的低延时配置</h3>
+
+<p>RTMP流的延时在1-3秒，比HLS的延时更靠谱，低延时的配置参考：<a href="https://github.com/ossrs/srs/wiki/v1_CN_LowLatency" target="_blank">低延时</a></p>
+
+<hr>
+
+<h2 id="rtmp的urlvhost规则">RTMP的URL/Vhost规则</h2>
+
+<p>RTMP的url其实很简单，vhost其实也没有什么新的概念，但是对于没有使用过的同学来讲，还是很容易混淆。几乎每个新人都必问的问题：RTMP那个URL推流时应该填什么，什么是vhost，什么是app？</p>
+
+<p>RTMP和HLS的优势参考：<a href="https://github.com/ossrs/srs/wiki/v1_CN_DeliveryHLS" target="_blank">HLS</a></p>
+
+<h3 id="应用场景-1">应用场景</h3>
+
+<p>Vhost的主要应用场景包括：</p>
+
+<ul><li>一个分发网络支持多个客户：譬如CDN，一个分发网络中，有N个客户公用一套流媒体系统，如何区分用户，计费，监控等等？通过app么？大家可能都叫做live之类。最好是通过各自的域名。</li>
+<li>不同的应用配置：譬如FMLE推上来的流是h264+mp3，可以将音频转码后放到其他的vhost分发hls，这样接入h264+mp3的vhost就不用切hls。</li>
+</ul>
+
+<p>总之，vhost作为应用配置的单元，能隔离客户，应用不同的配置。</p>
+
+
+
+<h3 id="标准rtmp-url">标准RTMP URL</h3>
+
+<p>标准RTMP URL指的是最大兼容的RTMP URL，基本上所有的服务器和播放器都能识别的URL，和HTTP URL其实很相似，例如：</p>
+
+<table>
+<thead>
+<tr>
+  <th align="left">HTTP</th>
+  <th align="center">Schema</th>
+  <th align="center">Host</th>
+  <th align="center">Port</th>
+  <th align="center">App</th>
+  <th align="center">Stream</th>
+</tr>
+</thead>
+<tbody><tr>
+  <td align="left"><a href="http://192.168.1.10:80/players/srs_player.html" target="_blank">http://192.168.1.10:80/players/srs_player.html</a></td>
+  <td align="center">http</td>
+  <td align="center">192.168.1.10</td>
+  <td align="center">80</td>
+  <td align="center">players</td>
+  <td align="center">srs_player.html</td>
+</tr>
+<tr>
+  <td align="left">rtmp://192.168.1.10:1935/live/livestream</td>
+  <td align="center">rtmp</td>
+  <td align="center">192.168.1.10</td>
+  <td align="center">1935</td>
+  <td align="center">live</td>
+  <td align="center">livestream</td>
+</tr>
+</tbody></table>
+
+
+<p>其中：</p>
+
+<ul><li>Schema：协议头，HTTP为HTTP或HTTPS，RTMP为RTMP/RTMPS/RTMPE/RTMPT等众多协议，还有新出的RTMFP。</li>
+<li>Host：主机，表示要连接的主机，可以为主机DNS名称或者IP地址。商用时，一般不会用IP地址，而是DNS名称，这样可以用CDN分发内容（CDN一般使用DNS调度，即不同网络和地理位置的用户，通过DNS解析到的IP不一样，实现用户的就近访问）。</li>
+<li>Port：端口，HTTP默认为80，RTMP默认为1935。当端口没有指定时，使用默认端口。</li>
+<li>Path：路径，HTTP访问的文件路径。</li>
+<li>App：RTMP的Application（应用）名称，可以类比为文件夹。以文件夹来分类不同的流，没有特殊约定，可以任意划分。</li>
+<li>Stream：RTMP的Stream（流）名称，可以类比为文件。</li>
+</ul>
+
+<h3 id="novhost">NoVhost</h3>
+
+<p>其实，vhost大多数用户都用不到，而且不推荐用，有点复杂。一般的用户用app就可以了。因为vhost/app/stream，只是一个分类方法而已；vhost需要在配置文件中说明，app/stream都不需要配置。</p>
+
+<p>什么时候用vhost？如果你是提供服务，譬如你有100个客户，都要用一套平台，走同样的流媒体服务器分发。那可以每个客户一个vhost，这样他们的app和stream可以相同都可以。</p>
+
+<p>一般的用法，举个例子，有个视频网站，自己搭建服务器，所以只有他自己一个客户，就不要用vhost了。假设视频网站提供聊天服务，聊天有不同的话题类型，譬如：军事栏目，读书栏目，历史栏目三个分类，每个分类下面有很多聊天室。只要这么配置就好：</p>
+
+<pre class="prettyprint hljs-dark"><code class="hljs nginx"><span class="hljs-title">listen</span>              <span class="hljs-number">1935</span>;<br><span class="hljs-title">vhost</span> __defaultVhost__ {<br>}<br></code></pre>
+
+<p>生成网页时，譬如军事栏目的网页，都用app名称为military，某个聊天室叫做火箭，这个页面的流可以用：rtmp://yourdomain.com/military/rock，编码器也推这个流，所有观看这个军事栏目/火箭聊天室的页面的人，都播放这个流。</p>
+
+<p>军事栏目另外的网页，都用同样的app名称military，但是流不一样，譬如某个聊天室叫做雷达，这个页面的流可以用：rtmp://yourdomain.com/military/radar，推流和观看一样。</p>
+
+<p>如此类推，军事栏目页面生成时，不用更改srs的任何配置。也就是说，新增聊天室，不用改服务器配置；新增分类，譬如加个公开课的聊天室，也不用改服务器配置。足够简单！</p>
+
+<p>另外，读书栏目可以用app名称为reader，栏目下的某个聊天室叫红楼梦，这个页面的流可以用：rtmp://yourdomain.com/reader/red_mansion，所有在这个聊天室的人都是播放这个流。</p>
+
+
+
+<h3 id="vhost的应用">Vhost的应用</h3>
+
+<p>RTMP的Vhost和HTTP的Vhost概念是一样的：虚拟主机。详见下表（假设域名demo.srs.com被解析到IP为192.168.1.10的服务器）：</p>
+
+<table>
+<thead>
+<tr>
+  <th align="left">HTTP</th>
+  <th align="center">Host</th>
+  <th align="center">Port</th>
+  <th align="center">Vhost</th>
+</tr>
+</thead>
+<tbody><tr>
+  <td align="left"><a href="http://demo.srs.com:80/players/srs_player.html" target="_blank">http://demo.srs.com:80/players/srs_player.html</a></td>
+  <td align="center">192.168.1.10</td>
+  <td align="center">80</td>
+  <td align="center">demo.srs.com</td>
+</tr>
+<tr>
+  <td align="left"><a href="http://demo.srs.com:1935/live/livestream" target="_blank">http://demo.srs.com:1935/live/livestream</a></td>
+  <td align="center">192.168.1.10</td>
+  <td align="center">1935</td>
+  <td align="center">demo.srs.com</td>
+</tr>
+</tbody></table>
+
+
+<p>Vhost主要的作用是：</p>
+
+<ul><li>支持多用户：当一台服务器需要服务多个客户，譬如CDN有cctv（央视）和wasu（华数传媒）两个客户时，如何隔离他们两个的资源？相当于不同的用户共用一台计算机，他们可以在自己的文件系统建立同样的文件目录结构，但是彼此不会冲突。</li>
+<li>域名调度：CDN分发内容时，需要让用户访问离自己最近的边缘节点，边缘节点再从源站或上层节点获取数据，达到加速访问的效果。一般的做法就是Host是DNS域名，这样可以根据用户的信息解析到不同的节点。</li>
+<li>支持多配置：有时候需要使用不同的配置，考虑一个支持多终端（PC/Apple/Android）的应用，PC上RTMP分发，Apple和Android是HLS分发，如何让PC延迟最低，同时HLS也能支持，而且终端播放时尽量地址一致（降低终端开发难度）？可以使用两个Vhost，PC和HLS；PC配置为最低延迟的RTMP，并且将流转发给HLS的Vhost，可以对音频转码（可能不是H264/AAC）后切片为HLS。PC和HLS这两个Vhost的配置肯定是不一样的，播放时，流名称是一样，只需要使用不同的Host就可以。</li>
+</ul>
+
+<h3 id="vhost支持多用户">Vhost支持多用户</h3>
+
+<p>假设cctv和wasu都运行在一台边缘节点(192.168.1.10)上，用户访问这两个媒体的流时，Vhost的作用见下表：</p>
+
+<table>
+<thead>
+<tr>
+  <th align="center">RTMP</th>
+  <th align="center">Host</th>
+  <th align="center">Port</th>
+  <th align="center">Vhost</th>
+  <th align="center">App</th>
+  <th align="center">Stream</th>
+</tr>
+</thead>
+<tbody><tr>
+  <td align="center">rtmp://show.cctv.cn/live/livestream</td>
+  <td align="center">192.168.1.10</td>
+  <td align="center">1935</td>
+  <td align="center">show.cctv.cn</td>
+  <td align="center">live</td>
+  <td align="center">livestream</td>
+</tr>
+<tr>
+  <td align="center">rtmp://show.wasu.cn/live/livestream</td>
+  <td align="center">192.168.1.10</td>
+  <td align="center">1935</td>
+  <td align="center">show.wasu.cn</td>
+  <td align="center">live</td>
+  <td align="center">livestream</td>
+</tr>
+</tbody></table>
+
+
+<p>在边缘节点（192.168.1.10）上的SRS，需要配置Vhost，例如：</p>
+
+<pre class="prettyprint hljs-dark"><code class="hljs css"><span class="hljs-tag">listen</span>              1935;<br><span class="hljs-tag">vhost</span> <span class="hljs-tag">show</span><span class="hljs-class">.cctv</span><span class="hljs-class">.cn</span> <span class="hljs-rules">{<br>}</span><br><span class="hljs-tag">vhost</span> <span class="hljs-tag">show</span><span class="hljs-class">.wasu</span><span class="hljs-class">.cn</span> <span class="hljs-rules">{<br>}</span><br></code></pre>
+
+
+
+<h3 id="vhost域名调度">Vhost域名调度</h3>
+
+<p>详细参考DNS和CDN的实现。</p>
+
+<h3 id="vhost支持多配置">Vhost支持多配置</h3>
+
+<p>以上面举的例子，若cctv需要延迟最低（意味着启动时只有声音，画面是黑屏），而wasu需要快速启动（打开就能看到视频，服务器cache了最后一个gop，延迟会较大）。</p>
+
+<p>只需要对这两个Vhost进行不同的配置，例如：</p>
+
+<pre class="prettyprint hljs-dark"><code class="hljs nginx"><span class="hljs-title">listen</span>              <span class="hljs-number">1935</span>;<br><span class="hljs-title">vhost</span> show.cctv.cn {<br>    <span class="hljs-title">chunk_size</span> <span class="hljs-number">128</span>;<br>}<br><span class="hljs-title">vhost</span> show.wasu.cn {<br>    <span class="hljs-title">chunk_size</span> <span class="hljs-number">4906</span>;<br>}<br></code></pre>
+
+<p>总之，这两个Vhost的配置完全没有关系，不会相互影响。</p>
+
+<h3 id="defaultvhost"><code>__defaultVhost__</code></h3>
+
+<p>FMS的<strong>defaultVhost</strong>是默认的vhost，当用户请求的vhost没有匹配成功时，若配置了defaultVhost，则使用它来提供服务。若匹配失败，也没有defaultVhost，则返回错误。</p>
+
+<p>譬如，服务器192.168.1.10上的SRS配置如下：</p>
+
+<pre class="prettyprint hljs-dark"><code class="hljs nginx"><span class="hljs-title">listen</span>              <span class="hljs-number">1935</span>;<br><span class="hljs-title">vhost</span> demo.srs.com {<br>    <span class="hljs-title">enabled</span>         <span class="hljs-built_in">on</span>;<br>}<br></code></pre>
+
+<p>那么，当用户访问以下vhost时：</p>
+
+<ul><li>rtmp://demo.srs.com/live/livestream：成功，匹配vhost为demo.srs.com</li>
+<li>rtmp://192.168.1.10/live/livestream：失败，没有找到vhost，也没有defaultVhost。</li>
+</ul>
+
+<p>defaultVhost和其他vhost的规则一样，只是用来匹配那些没有匹配成功的vhost的请求的。</p>
+
+
+
+<h3 id="访问指定的vhost-重要">访问指定的Vhost (重要)</h3>
+
+<p>如何访问某台服务器上的Vhost？有两个方法：</p>
+
+<ul><li>配置hosts：因为Vhost实际上就是DNS解析，所以可以配置客户端的hosts，将域名（Vhost）解析到指定的服务器，就可以访问这台服务器上的指定的vhost。</li>
+<li>使用app的参数：需要服务器支持。在app后面带参数指定要访问的Vhost。SRS支持?vhost=VHOST和…vhost…VHOST这两种方式，后面的方式是避免一些播放器不识别？和=等特殊字符。</li>
+</ul>
+
+<p>普通用户不用这么麻烦，直接访问RTMP地址就好了，有时候运维需要看某台机器上的Vhost的流是否有问题，就需要这种特殊的访问方式。考虑下面的例子：</p>
+
+<pre class="prettyprint hljs-dark"><code class="hljs cpp">RTMP URL: rtmp:<span class="hljs-comment">//demo.srs.com/live/livestream</span><br>边缘节点数目：<span class="hljs-number">50</span>台<br>边缘节点IP：<span class="hljs-number">192.168</span><span class="hljs-number">.1</span><span class="hljs-number">.100</span> 至 <span class="hljs-number">192.168</span><span class="hljs-number">.1</span><span class="hljs-number">.150</span><br>边缘节点SRS配置：<br>    listen              <span class="hljs-number">1935</span>;<br>    vhost demo.srs.com {<br>        mode remote;<br>        origin: xxxxxxx;<br>    }<br></code></pre>
+
+<p>各种访问方式见下表：</p>
+
+<table>
+<thead>
+<tr>
+  <th align="left">用户</th>
+  <th align="left">RTMP URL</th>
+  <th align="left">hosts设置</th>
+  <th align="left">目标</th>
+</tr>
+</thead>
+<tbody><tr>
+  <td align="left">普通户用</td>
+  <td align="left">rtmp://demo.srs.com/live/livestream</td>
+  <td align="left">无</td>
+  <td align="left">由DNS解析到指定边缘</td>
+</tr>
+<tr>
+  <td align="left">运维</td>
+  <td align="left">rtmp://demo.srs.com/live/livestream</td>
+  <td align="left">192.168.1.100 demo.srs.com</td>
+  <td align="left">查看192.168.1.100上的流</td>
+</tr>
+<tr>
+  <td align="left">运维</td>
+  <td align="left">rtmp://192.168.1.100/live?</td>
+  <td align="left"></td>
+  <td align="left"></td>
+</tr>
+</tbody></table>
+
+
+<p>vhost=demo.srs.com/livestream | 无 | 查看192.168.1.100上的流 | <br>
+| 运维 |  rtmp://192.168.1.100/live <br>
+…vhost…demo.srs.com/livestream | 无 | 查看192.168.1.100上的流 |</p>
+
+<p>访问其他服务器的流也类似。</p>
+
+
+
+<h3 id="fmle的奇怪url方式">FMLE的奇怪URL方式</h3>
+
+<p>FMLE推流时，URL那个地方，有三个可以输入的框，参考<a href="http://help.adobe.com/en_US/FlashMediaLiveEncoder/3.0/Using/WS5b3ccc516d4fbf351e63e3d11c104ba878-7ff7.html" target="_blank">Adobe FMLE</a>：</p>
+
+<ul><li>FMS URL: 需要输入rtmp://host:port/app，例如：rtmp://demo.srs.com/live</li>
+<li>Backup URL: 备份的服务器，格式同FMS URL。若指定了备份服务器，FMLE会同时推送给这两个服务器。</li>
+<li>Stream: 流名称，例如：livestream</li>
+</ul>
+
+<p>实际上是将RTMP URL分成了两部分，stream前面那部分和stream。为何要这么搞？我猜想有以下原因：</p>
+
+<ul><li>支持多级app和Stream：我们目前举的例子都是一级app和一级stream，实际上RTMP支持多级app和stream，就像子文件夹，实际上很少用得到。所以SRS的URL都是一个地址，默认最后一个/后面就是stream，前面是app。</li>
+<li>支持流名称带参数：Adobe的鬼HLS/HDS非常之麻烦，那个地址是个恶心的完全不一致。参考FMS livepkgr，例如发布一个rtmp，并切片成HLS：</li>
+</ul>
+
+<p>FMLE: <br>
+FMS URL: rtmp://demo.srs.com/livepkgr <br>
+Stream: livestream?adbe-live-event=liveevent</p>
+
+<p>Client: <br>
+RTMP:  rtmp://demo.srs.com/livepkgr/livestream <br>
+HLS: <a href="&quot;http://demo.srs.com/hls-live/livepkgr/&lt;em" target="_blank">definst/liveevent/livestream.m3u8”&gt;http://demo.srs.com/hls-live/livepkgr/<em>definst</em>/liveevent/livestream.m3u8</a> <br>
+HDS: <a href="&quot;http://demo.srs.com/hds-live/livepkgr/&lt;em" target="_blank">definst/liveevent/livestream.f4m”&gt;http://demo.srs.com/hds-live/livepkgr/<em>definst</em>/liveevent/livestream.f4m</a></p>
+
+<p>没有比这个更恶心的东西了。比较SRS的简洁方案：</p>
+
+<p>FMLE:  <br>
+FMS URL: rtmp://demo.srs.com/livepkgr <br>
+Stream: livestream</p>
+
+<p>Client: <br>
+RTMP: rtmp://demo.srs.com/livepkgr/livestream <br>
+HLS: <a href="http://demo.srs.com/livepkgr/livestream.m3u8" target="_blank">http://demo.srs.com/livepkgr/livestream.m3u8</a> <br>
+HDS: not support yet.</p>
+
+<p>既然谈到了RTMP URL中的参数，下一章就说说这个。</p>
+
+
+
+<h3 id="rtmp-url参数">RTMP URL参数</h3>
+
+<p>RTMP URL一般是不带参数，类似于http的query，有时候为了特殊的要求，会在RTMP URL中带参数，譬如：</p>
+
+<ul><li>Vhost：前面讲过，在app后面加参数，可以访问指定服务器的指定Vhost。这个SRS的特殊约定，方便排错。</li>
+<li>FMLE的Stream后面的参数，指定event之类的。SRS不需要这么麻烦，HLS是内置支持，无需这种复杂的配置。Callback也是http的，FMS为了支持服务器端脚本，需要很复杂的配置和复杂的参数，实在是很麻烦的设计。</li>
+<li>token认证：SRS还未实现。在连接服务器时，在app后面指定token（方式和vhost一样），例如rtmp://server/live?vhost=xxx&amp;token=xxx/livestream，服务器可以取出token，进行验证，若验证失败则断开连接，这种是比Refer更高级的防盗链。</li>
+</ul>
+
+<p>app和stream后面带参数，这两者有何区别，为何SRS把参数放在app后面？客户端播放流的as3代码大约是：</p>
+
+<pre class="prettyprint hljs-dark"><code class="hljs actionscript"><span class="hljs-comment">// how to play url: rtmp://demo.srs.com/live/livestream</span><br>conn = <span class="hljs-keyword">new</span> NetConnection();<br>conn.connect(<span class="hljs-string">"rtmp://demo.srs.com/live"</span>);<br><br>stream = <span class="hljs-keyword">new</span> NetStream(conn);<br>stream.play(<span class="hljs-string">"livestream"</span>);<br></code></pre>
+
+<p>从RTMP协议的角度来看：</p>
+
+<ul><li>NetConnection.connect(vhost+app)：这一步会完成握手，connect到vhost，切换到app。类似于登录到vhost后，cd到app这个目录。也就是vhost的验证，都可以在这一步做，也就是指定vhost也是在一步了，所以app后面跟的参数都是和vhost/app相关的。</li>
+<li>NetStream.play(stream)：这一步是播放指定的直播流。所以和stream相关的事件，都可以传递参数，譬如Adobe的event。SRS是没有这些事件的，流启动时，若配置了HLS会自动开始切片。</li>
+</ul>
+
+<h3 id="srs的url规则">SRS的URL规则</h3>
+
+<p>SRS只做简化的事情，绝对不把简单的事情搞复杂。</p>
+
+<p>SRS的RTMP URL使用标准的RTMP URL，一般不需要对app和stream加参数，或者更改他们的意义。除了两个地方：</p>
+
+<ul><li>vhost支持参数访问：为了方便运维访问某台服务器的vhost，不需要设置hosts。不影响普通用户。</li>
+<li>支持token验证：为了支持token验证，在app后面带参数，这个是token验证必须的方式。</li>
+</ul>
+
+<p>另外，SRS建议用户使用一级app和一级stream，不使用多级app和多级stream。譬如：</p>
+
+<p>// 不推荐使用的多级app或stream <br>
+rtmp://demo.srs.com/show/live/livestream <br>
+rtmp://demo.srs.com/show/live/livestream/2013</p>
+
+<p>srs播放器(srs_player)和srs编码器(srs_publisher)不支持多级app和stream，他们认为最后一个斜杠（/）后面的就是stream，前面的是app。即：</p>
+
+<pre class="prettyprint hljs-dark"><code class="hljs groovy"><span class="hljs-comment">// srs_player和srs_publisher的解析方式：</span><br><span class="hljs-comment">// play or publish the following rtmp URL:</span><br><span class="hljs-string">rtmp:</span><span class="hljs-comment">//demo.srs.com/show/live/livestream/2013</span><br><span class="hljs-string">schema:</span> rtmp<br>host/<span class="hljs-string">vhost:</span> demo.srs.com<br><span class="hljs-string">app:</span> show<span class="hljs-regexp">/live/</span>livestream<br><span class="hljs-string">stream:</span> <span class="hljs-number">2013</span><br></code></pre>
+
+<p>做此简化的好处是，srs播放器和编码器，只需要指定一个url，而且两者的url是一样的。</p>
+
+<p>SRS常见的三种RTMP URL，详细见下表：</p>
+
+<table>
+<thead>
+<tr>
+  <th align="center">URL</th>
+  <th align="center">说明</th>
+</tr>
+</thead>
+<tbody><tr>
+  <td align="center">rtmp://demo.srs.com/live/livestream</td>
+  <td align="center">普通用户的标准访问方式，观看直播流</td>
+</tr>
+<tr>
+  <td align="center">rtmp://192.168.1.10/live?vhost=demo.srs.com/livestream</td>
+  <td align="center">运维对特定服务器排错</td>
+</tr>
+<tr>
+  <td align="center">rtmp://demo.srs.com/live?key=ER892ID839KD9D0A1D87D/livestream</td>
+  <td align="center">token验证用户，或者带宽测试的key验证</td>
+</tr>
+</tbody></table>
+
+
+<h3 id="srs的vhost">SRS的Vhost</h3>
+
+<p>SRS的full.conf配置文件中，有很多Vhost，主要是为了说明各个功能，每个功能都单独列出一个vhost。所有功能都放在demo.srs.com这个vhost中。</p>
+
+<table>
+<thead>
+<tr>
+  <th align="left">Category</th>
+  <th align="left">Vhost</th>
+  <th align="left">说明</th>
+</tr>
+</thead>
+<tbody><tr>
+  <td align="left">RTMP</td>
+  <td align="left">defaultVhost</td>
+  <td align="left">默认Vhost的配置，只支持RTMP功能</td>
+</tr>
+<tr>
+  <td align="left">RTMP</td>
+  <td align="left">chunksize.vhost.com</td>
+  <td align="left">如何设置chunk size的实例。其他Vhost将此配置打开，即可设置chunk size。</td>
+</tr>
+<tr>
+  <td align="left">Forward</td>
+  <td align="left">same.vhost.forward.vhost.com</td>
+  <td align="left">Forward实例：将流转发到同一个vhost。</td>
+</tr>
+<tr>
+  <td align="left">HLS</td>
+  <td align="left">with-hls.vhost.com</td>
+  <td align="left">HLS实例：如何开启HLS，以及HLS的相关配置。</td>
+</tr>
+<tr>
+  <td align="left">HLS</td>
+  <td align="left">no-hls.vhost.com</td>
+  <td align="left">HLS实例：如何禁用HLS。</td>
+</tr>
+<tr>
+  <td align="left">RTMP</td>
+  <td align="left">min.delay.com</td>
+  <td align="left">RTMP最低延迟：如何配置最低延迟的RTMP流</td>
+</tr>
+<tr>
+  <td align="left">RTMP</td>
+  <td align="left">refer.anti_suck.com</td>
+  <td align="left">Refer实例：如何配置Refer防盗链</td>
+</tr>
+<tr>
+  <td align="left">RTMP</td>
+  <td align="left">bandcheck.srs.com</td>
+  <td align="left">带宽测试用的vhost，srs测速默认连接到这个vhost。这个vhost配置了带宽测速的key，可测速间隔和最大测速带宽限制。其他Vhost也可以支持测速，只要把这个配置项打开，然后在测速播放器的参数中指明另外的vhost</td>
+</tr>
+<tr>
+  <td align="left">RTMP</td>
+  <td align="left">removed.vhost.com</td>
+  <td align="left">禁用vhost实例：如何禁用vhost。</td>
+</tr>
+<tr>
+  <td align="left">Callback</td>
+  <td align="left">hooks.callback.vhost.com</td>
+  <td align="left">设置http callback的实例，当这些事件发生时，SRS会调用指定的http api。其他Vhost将这些配置打开，就可以支持http callback。</td>
+</tr>
+<tr>
+  <td align="left">Transcode</td>
+  <td align="left">mirror.transcode.vhost.com</td>
+  <td align="left">转码实例：使用ffmpeg的实例filter，将视频做镜像翻转处理。其他Vhost添加这个配置，就可以对流进行转码。注：所有转码的流都需要重新推送到SRS，使用不同的流名称（vhost和app也可以不一样）。</td>
+</tr>
+<tr>
+  <td align="left">Transcode</td>
+  <td align="left">crop.transcode.vhost.com</td>
+  <td align="left">转码实例：剪裁视频filter。其他vhost添加此filter，即可对视频进行剪裁。注：所有转码的流都需要重新推送到SRS，使用不同的流名称（vhost和app也可以不一样）。</td>
+</tr>
+<tr>
+  <td align="left">Transcode</td>
+  <td align="left">logo.transcode.vhost.com</td>
+  <td align="left">转码实例：添加图片/视频水印。其他vhost添加这些配置，可以加图片/视频水印。注：所有转码的流都需要重新推送到SRS，使用不同的流名称（vhost和app也可以不一样）。</td>
+</tr>
+<tr>
+  <td align="left">Transcode</td>
+  <td align="left">audio.transcode.vhost.com</td>
+  <td align="left">转码实例：只对音频转码。其他vhost添加此配置，可只对音频转码。注：所有转码的流都需要重新推送到SRS，使用不同的流名称（vhost和app也可以不一样）。</td>
+</tr>
+<tr>
+  <td align="left">Transcode</td>
+  <td align="left">copy.transcode.vhost.com</td>
+  <td align="left">转码实例：只转封装。类似于forward功能。</td>
+</tr>
+<tr>
+  <td align="left">Transcode</td>
+  <td align="left">all.transcode.vhost.com</td>
+  <td align="left">转码实例：对上面的实例的汇总。</td>
+</tr>
+<tr>
+  <td align="left">Transcode</td>
+  <td align="left">ffempty.transcode.vhost.com</td>
+  <td align="left">调用ffempty程序转码，这个只是一个stub，打印出参数而已。用作调试用，看参数是否传递正确。</td>
+</tr>
+<tr>
+  <td align="left">Transcode</td>
+  <td align="left">app.transcode.vhost.com</td>
+  <td align="left">转码实例：只对匹配的app的流进行转码。</td>
+</tr>
+<tr>
+  <td align="left">Transcode</td>
+  <td align="left">stream.transcode.vhost.com</td>
+  <td align="left">转码实例：只对匹配的流进行转码。</td>
+</tr>
+</tbody></table>
+
+
+<p>SRS的demo.conf配置文件中，包含了demo用到的一些vhost，参考<a href="https://github.com/ossrs/srs/wiki/v1_CN_SampleDemo" target="_blank">Usage：Demo</a></p>
+
+<table>
+<thead>
+<tr>
+  <th align="left">Category</th>
+  <th align="left">Vhost</th>
+  <th align="left">说明</th>
+</tr>
+</thead>
+<tbody><tr>
+  <td align="left">DEMO</td>
+  <td align="left">players</td>
+  <td align="left">srs_player播放的演示流，按照Readme的Step会推流到这个vhost，demo页面打开后播放的流就是这个vhost中的流</td>
+</tr>
+<tr>
+  <td align="left">DEMO</td>
+  <td align="left">players_pub</td>
+  <td align="left">srs编码器推流到players这个vhost，然后转码后将流推送到这个vhost，并切片为hls，srs编码器播放的带字幕的流就是这个vhost的流</td>
+</tr>
+<tr>
+  <td align="left">DEMO</td>
+  <td align="left">players_pub_rtmp</td>
+  <td align="left">srs编码器演示页面中的低延时播放器，播放的就是这个vhost的流，这个vhost关闭了gop cache，关闭了hls，让延时最低（在1秒内）</td>
+</tr>
+<tr>
+  <td align="left">DEMO</td>
+  <td align="left">demo.srs.com</td>
+  <td align="left">srs的演示vhost，Readme的step最后的12路流演示，以及播放器的12路流延时，都是访问的这个vhost。包含了SRS所有的功能。</td>
+</tr>
+<tr>
+  <td align="left">Others</td>
+  <td align="left">dev</td>
+  <td align="left">开发用的，可忽略</td>
+</tr>
+</tbody></table>
+
+
+<hr>
+
+
+
+<h2 id="低延时直播应用">低延时直播应用</h2>
+
+<p>直播应用中，RTMP和HLS基本上可以覆盖所有客户端观看（参考：<a href="https://github.com/ossrs/srs/wiki/v1_CN_DeliveryHLS" target="_blank">DeliveryHLS</a>），HLS主要是延时比较大，RTMP主要优势在于延时低。</p>
+
+<p>低延时的部署实例参考：<a href="https://github.com/ossrs/srs/wiki/v1_CN_SampleRealtime" target="_blank">RTMP低延时配置</a></p>
+
+
+
+<h3 id="应用场景-2">应用场景</h3>
+
+<p>低延时应用场景包括：</p>
+
+<ul><li>互动式直播：譬如2013年大行其道的美女主播，游戏直播等等各种主播，流媒体分发给用户观看。用户可以文字聊天和主播互动。</li>
+<li>视频会议：SRS的DEMO就有视频会议应用，我们要是有同事出差在外地，就用这个视频会议开内部会议。其实会议1秒延时无所谓，因为人家讲完话后，其他人需要思考，思考的延时也会在1秒左右。当然如果用视频会议吵架就不行。</li>
+<li>其他：监控，直播也有些地方需要对延迟有要求，互联网上RTMP协议的延迟基本上能够满足要求。</li>
+</ul>
+
+
+
+<h3 id="rtmp和延时">RTMP和延时</h3>
+
+<ul><li>Adobe支持得很好：RTMP实际上是现在编码器输出的工业标准协议，基本上所有的编码器（摄像头之类）都支持RTMP输出。原因在于PC市场巨大，PC主要是Windows，Windows的浏览器基本上都支持flash，Flash又支持RTMP支持得灰常好。</li>
+<li>适合长时间播放：因为RTMP支持的很完善，所以能做到flash播放RTMP流长时间不断流，当时测试是100万秒，即10天多可以连续播放。对于商用流媒体应用，客户端的稳定性当然也是必须的，否则最终用户看不了还怎么玩？我就知道有个教育客户，最初使用播放器播放http流，需要播放不同的文件，结果就总出问题，如果换成服务器端将不同的文件转换成RTMP流，客户端就可以一直播放；该客户走RTMP方案后，经过CDN分发，没听说客户端出问题了。</li>
+<li>延迟较低：比起YY的那种UDP私有协议，RTMP算延迟大的（延迟在1-3秒），比起HTTP流的延时（一般在10秒以上）RTMP算低延时。一般的直播应用，只要不是电话类对话的那种要求，RTMP延迟是可以接受的。在一般的视频会议（参考SRS的视频会议延时）应用中，RTMP延时也能接受，原因是别人在说话的时候我们一般在听，实际上1秒延时没有关系，我们也要思考（话说有些人的CPU处理速度还没有这么快）。</li>
+<li>有累积延迟：技术一定要知道弱点，RTMP有个弱点就是累积误差，原因是RTMP基于TCP不会丢包。所以当网络状态差时，服务器会将包缓存起来，导致累积的延迟；待网络状况好了，就一起发给客户端。这个的对策就是，当客户端的缓冲区很大，就断开重连。当然SRS也提供配置。</li>
+</ul>
+
+
+
+<h3 id="hls低延时">HLS低延时</h3>
+
+<p>主要有人老是问这个问题，如何降低HLS延迟。</p>
+
+<p>HLS解决延时，就像是爬到枫树上去捉鱼，奇怪的是还有人喊，看那，有鱼。你说是怎么回事。</p>
+
+<p>我只能说你在参与谦哥的魔术表演，错觉罢了。</p>
+
+<p>如果你真的确信有，请用实际测量的图片来展示出来，参考下面延迟的测量。</p>
+
+
+
+<h3 id="rtmp延时的测量">RTMP延时的测量</h3>
+
+<p>如何测量延时，是个很难的问题，不过有个行之有效的方法，就是用手机的秒表，可以比较精确的对比延时。参考：<a href="http://blog.csdn.net/win_lin/article/details/12615591" target="_blank">RTMP延时测量</a></p>
+
+<p>经过测量发现，在网络状况良好时：</p>
+
+<ul><li>RTMP延时可以做到0.8秒左右（SRS也可以）。</li>
+<li>多级边缘节点不会影响延迟（和SRS同源的某CDN的边缘服务器可以做到）</li>
+<li>Nginx-Rtmp延迟有点大，估计是缓存的处理，多进程通信导致？</li>
+<li>GOP是个硬指标，不过SRS可以关闭GOP的cache来避免这个影响，参考后面的配置方法。</li>
+<li>服务器性能太低，也会导致延迟变大，服务器来不及发送数据。</li>
+<li>客户端的缓冲区长度也影响延迟。譬如flash客户端的NetStream.bufferTime设置为10秒，那么延迟至少10秒以上。</li>
+</ul>
+
+
+
+<h3 id="gop-cache">GOP-Cache</h3>
+
+<p>什么是GOP？就是视频流中两个I帧的时间距离，如果问什么是I帧就去百度。</p>
+
+<p>GOP有什么影响？Flash（解码器）只有拿到GOP才能开始解码播放。也就是说，服务器一般先给一个I帧给Flash。可惜问题来了，假设GOP是10秒，也就是每隔10秒才有关键帧，如果用户在第5秒时开始播放，会怎么样？</p>
+
+<p>第一种方案：等待下一个I帧，也就是说，再等5秒才开始给客户端数据。这样延迟就很低了，总是实时的流。问题是：等待的这5秒，会黑屏，现象就是播放器卡在那里，什么也没有，有些用户可能以为死掉了，就会刷新页面。总之，某些客户会认为等待关键帧是个不可饶恕的错误，延时有什么关系？我就希望能快速启动和播放视频，最好打开就能放！</p>
+
+<p>第二种方案：马上开始放，放什么呢？你肯定知道了，放前一个I帧。也就是说，服务器需要总是cache一个gop，这样客户端上来就从前一个I帧开始播放，就可以快速启动了。问题是：延迟自然就大了。</p>
+
+<p>有没有好的方案？有！至少有两种：</p>
+
+<ul><li>编码器调低GOP，譬如0.5秒一个GOP，这样延迟也很低，也不用等待。坏处是编码器压缩率会降低，图像质量没有那么好。</li>
+<li>服务器提供配置，可以选择前面两个方案之一：SRS就这么做，有个gop_cache配置项，on就会马上播放，off就低延迟。</li>
+</ul>
+
+<p>SRS的配置项：</p>
+
+<pre class="prettyprint hljs-dark"><code class="hljs vbscript"># the listen ports, <span class="hljs-built_in">split</span> by <span class="hljs-built_in">space</span>.<br>listen              <span class="hljs-number">1935</span>;<br>vhost __defaultVhost__ {<br>    # whether cache the last gop.<br>    # <span class="hljs-keyword">if</span> <span class="hljs-keyword">on</span>, cache the last gop <span class="hljs-keyword">and</span> dispatch <span class="hljs-keyword">to</span> client,<br>    #   <span class="hljs-keyword">to</span> enable fast startup <span class="hljs-keyword">for</span> client, client play immediately.<br>    # <span class="hljs-keyword">if</span> off, send the latest media data <span class="hljs-keyword">to</span> client,<br>    #   client need <span class="hljs-keyword">to</span> wait <span class="hljs-keyword">for</span> the <span class="hljs-keyword">next</span> Iframe <span class="hljs-keyword">to</span> decode <span class="hljs-keyword">and</span> show the video.<br>    # <span class="hljs-keyword">set</span> <span class="hljs-keyword">to</span> off <span class="hljs-keyword">if</span> requires min delay;<br>    # <span class="hljs-keyword">set</span> <span class="hljs-keyword">to</span> <span class="hljs-keyword">on</span> <span class="hljs-keyword">if</span> requires client fast startup.<br>    # <span class="hljs-keyword">default</span>: <span class="hljs-keyword">on</span><br>    gop_cache       <span class="hljs-keyword">on</span>;<br>}<br></code></pre>
+
+<p>备注：参考conf/full.conf的min.delay.com配置。</p>
+
+
+
+<h3 id="累积延迟">累积延迟</h3>
+
+<p>除了GOP-Cache，还有一个有关系，就是累积延迟。SRS可以配置直播队列的长度，服务器会将数据放在直播队列中，如果超过这个长度就清空到最后一个I帧：</p>
+
+<pre class="prettyprint hljs-dark"><code class="hljs nginx"><span class="hljs-title">vhost</span> your_vhost {<br>    <span class="hljs-comment"># the max live queue length in seconds.</span><br>    <span class="hljs-comment"># if the messages in the queue exceed the max length, </span><br>    <span class="hljs-comment"># drop the old whole gop.</span><br>    <span class="hljs-comment"># default: 30</span><br>    <span class="hljs-title">queue_length</span>    <span class="hljs-number">10</span>;<br>}<br></code></pre>
+
+<p>当然这个不能配置太小，譬如GOP是1秒，queue_length是1秒，这样会导致有1秒数据就清空，会导致跳跃。</p>
+
+<p>有更好的方法？有的。延迟基本上就等于客户端的缓冲区长度，因为延迟大多由于网络带宽低，服务器缓存后一起发给客户端，现象就是客户端的缓冲区变大了，譬如NetStream.BufferLength=5秒，那么说明缓冲区中至少有5秒数据。</p>
+
+<p>处理累积延迟的最好方法，是客户端检测到缓冲区有很多数据了，如果可以的话，就重连服务器。当然如果网络一直不好，那就没有办法了。</p>
+
+<h3 id="低延时配置">低延时配置</h3>
+
+<p>考虑GOP-Cache和累积延迟，推荐的低延时配置如下（参考min.delay.com）：</p>
+
+<pre class="prettyprint hljs-dark"><code class="hljs nginx"><span class="hljs-comment"># the listen ports, split by space.</span><br><span class="hljs-title">listen</span>              <span class="hljs-number">1935</span>;<br><span class="hljs-title">vhost</span> __defaultVhost__ {<br>    <span class="hljs-comment"># whether cache the last gop.</span><br>    <span class="hljs-comment"># if on, cache the last gop and dispatch to client,</span><br>    <span class="hljs-comment">#   to enable fast startup for client, client play immediately.</span><br>    <span class="hljs-comment"># if off, send the latest media data to client,</span><br>    <span class="hljs-comment">#   client need to wait for the next Iframe to decode and show the video.</span><br>    <span class="hljs-comment"># set to off if requires min delay;</span><br>    <span class="hljs-comment"># set to on if requires client fast startup.</span><br>    <span class="hljs-comment"># default: on</span><br>    <span class="hljs-title">gop_cache</span>       <span class="hljs-built_in">off</span>;<br>    <span class="hljs-comment"># the max live queue length in seconds.</span><br>    <span class="hljs-comment"># if the messages in the queue exceed the max length, </span><br>    <span class="hljs-comment"># drop the old whole gop.</span><br>    <span class="hljs-comment"># default: 30</span><br>    <span class="hljs-title">queue_length</span>    <span class="hljs-number">10</span>;<br>}<br></code></pre>
+
+<p>当然，服务器的性能也要考虑，不可以让一个SRS进程跑太高带宽，一般CPU在80%以下不会影响延迟，连接数参考<a href="https://github.com/ossrs/srs/wiki/v1_CN_Performance" target="_blank">性能</a>。</p>
+
+
+
+<h2 id="hls部署实例">HLS部署实例</h2>
+
+<ol><li rel="1"><p>获取SRS。详细参考<a href="https://github.com/ossrs/srs/wiki/v1_CN_Git" target="_blank">GIT获取代码</a></p>
+
+<pre class="prettyprint hljs-dark"><code class="hljs crmsh">git <span class="hljs-keyword">clone</span> <span class="hljs-title">https</span>://github.com/ossrs/srs<br>cd srs/trunk<br></code></pre>
+
+<p>或者使用git更新已有代码：</p>
+
+<pre class="prettyprint hljs-dark"><code class="hljs nginx"><span class="hljs-title">git</span> pull<br></code></pre></li>
+<li rel="2"><p>编译SRS <br>
+<code>./configure --disable-all --with-ssl --with-hls --with-nginx &amp;&amp; make</code></p></li>
+<li rel="3"><p>启动分发hls(m3u8/ts)的nginx。详细参考：<a href="https://github.com/ossrs/srs/wiki/v1_CN_DeliveryHLS" target="_blank">Delivery HLS</a> <br>
+<code>./objs/nginx/sbin/nginx</code> <br>
+备注：为了突出HLS的配置，我们在HLS的实例中没有使用SRS内置的HTTP Server，可以配置几行就可以不用nginx。参考：<a href="https://github.com/ossrs/srs/wiki/v1_CN_SampleHTTP" target="_blank">Usage: HTTP</a></p>
+
+<p>备注：请确定nginx已经启动，可以访问nginx，若能看到nginx is ok则没有问题。</p></li>
+<li rel="4"><p>编写SRS配置文件 <br>
+将以下内容保存为文件，譬如conf/hls.conf，服务器启动时指定该配置文件(srs的conf文件夹有该文件)。</p>
+
+<pre class="prettyprint hljs-dark"><code class="hljs nginx"><span class="hljs-comment"># conf/hls.conf</span><br><span class="hljs-title">listen</span>              <span class="hljs-number">1935</span>;<br><span class="hljs-title">max_connections</span>     <span class="hljs-number">1000</span>;<br><span class="hljs-title">vhost</span> __defaultVhost__ {<br>    <span class="hljs-title">hls</span> {<br>        <span class="hljs-title">enabled</span>         <span class="hljs-built_in">on</span>;<br>        <span class="hljs-title">hls_path</span>        ./objs/nginx/html;<br>        <span class="hljs-title">hls_fragment</span>    <span class="hljs-number">10</span>;<br>        <span class="hljs-title">hls_window</span>      <span class="hljs-number">60</span>;<br>    }<br>}<br></code></pre>
+
+<p>备注：hls_path必须存在，srs只会自动创建${hls_path}下的app的目录。</p></li>
+<li rel="5"><p>启动SRS <br>
+<code>./objs/srs -c conf/hls.conf</code></p></li>
+<li rel="6"><p>启动推流编码器 <br>
+使用FFMPEG命令推流：</p>
+
+<pre class="prettyprint hljs-dark"><code class="hljs gradle"><span class="hljs-keyword">for</span>((;;)); <span class="hljs-keyword">do</span> \<br>    .<span class="hljs-regexp">/objs/</span>ffmpeg<span class="hljs-regexp">/bin/</span>ffmpeg -re -i .<span class="hljs-regexp">/doc/</span><span class="hljs-keyword">source</span>.<span class="hljs-number">200</span>kbps.<span class="hljs-number">768</span>x320.flv \<br>    -vcodec <span class="hljs-keyword">copy</span> -acodec <span class="hljs-keyword">copy</span> \<br>    -f flv -y rtmp:<span class="hljs-comment">//192.168.1.170/live/livestream; \</span><br>    sleep <span class="hljs-number">1</span>; \<br>done<br></code></pre>
+
+<p>或使用支持h.264+aac的FMLE推流（若不支持h.264+aac，则可以使用srs转码，参考Transcode2HLS）：</p>
+
+<pre class="prettyprint hljs-dark"><code class="hljs groovy">FMS <span class="hljs-string">URL:</span> <span class="hljs-string">rtmp:</span><span class="hljs-comment">//192.168.1.170/live</span><br><span class="hljs-string">Stream:</span> livestream<br></code></pre>
+
+<p>生成的流地址为：</p>
+
+<ul>
+<li>RTMP流地址为：rtmp://192.168.1.170/live/livestream</li>
+<li>HLS流地址为： <a href="http://192.168.1.170/live/livestream.m3u8" target="_blank">http://192.168.1.170/live/livestream.m3u8</a></li></ul></li>
+<li rel="7"><p>观看RTMP流 <br>
+RTMP流地址为：rtmp://192.168.1.170/live/livestream</p>
+
+<p>可以使用VLC观看。</p>
+
+<p>或者使用在线SRS播放器播放：<a href="http://winlinvip.github.io/srs.release/trunk/research/players/srs_player.html?vhost=__defaultVhost__&amp;autostart=true&amp;server=192.168.1.170&amp;app=live&amp;stream=livestream&amp;port=1935" target="_blank">srs-player</a></p>
+
+<p>备注：请将所有实例的IP地址192.168.1.170都换成部署的服务器IP地址。</p></li>
+<li rel="8"><p>观看HLS流 <br>
+HLS流地址为： <a href="http://192.168.1.170/live/livestream.m3u8" target="_blank">http://192.168.1.170/live/livestream.m3u8</a></p>
+
+<p>可以使用VLC观看。</p>
+
+<p>或者使用在线SRS播放器播放：<a href="http://winlinvip.github.io/srs.release/trunk/research/players/jwplayer6.html?vhost=__defaultVhost__&amp;hls_autostart=true&amp;server=192.168.1.170&amp;app=live&amp;stream=livestream&amp;hls_port=8080" target="_blank">jwplayer</a></p>
+
+<p>备注：请将所有实例的IP地址192.168.1.170都换成部署的服务器IP地址。</p>
+
+<p>注意：VLC无法观看纯音频流，jwplayer可以观看。</p>
+
+<p>分发纯音频流参考：<a href="https://github.com/ossrs/srs/wiki/v1_CN_DeliveryHLS#hlsaudioonly" target="_blank">HLS audio only</a></p></li>
+</ol>
+
+
+
+<h3 id="qa">Q&amp;A</h3>
+
+
+
+<h4 id="rtmp流能看hls看不了">RTMP流能看，HLS看不了</h4>
+
+<ul><li>确认nginx启动并且可以访问：nginx is ok页面能访问。</li>
+<li>确认m3u8文件能下载：浏览器打开<a href="http://192.168.1.170/live/livestream.m3u8" target="_blank">http://192.168.1.170/live/livestream.m3u8</a>，ip地址换成你服务器的IP地址。</li>
+<li>若m3u8能下载，可能是jwplayer的问题，使用vlc播放地址：<a href="http://192.168.1.170/live/livestream.m3u8" target="_blank">http://192.168.1.170/live/livestream.m3u8</a>，ip地址换成你服务器的IP地址。</li>
+<li>若VLC不能播放，将m3u8下载后，用文本编辑器打开，将m3u8文件内容发到QQ群中，或者贴到issue中。寻求帮助。</li>
+<li>还有可能是编码问题，参考下面的“RTMP流和HLS流内容不一致”</li>
+</ul>
+
+
+
+<h4 id="rtmp流内容和hls流内容不一致">RTMP流内容和HLS流内容不一致</h4>
+
+<ul><li>一般这种问题出现在使用上面的例子推流，然后换成别的编码器推流，或者换个文件推流。</li>
+<li>可能是流的编码不对（推流时使用FMLE），HLS需要h.264+aac，需要转码，参考只转码音频<a href="https://github.com/ossrs/srs/wiki/v1_CN_SampleTranscode2HLS" target="_blank">Transcode2HLS</a></li>
+</ul>
+
+<h2 id="delivery-hls">Delivery HLS</h2>
+
+<p>SRS支持HLS/RTMP两种成熟而且广泛应用的流媒体分发方式。</p>
+
+<p>RTMP指Adobe的RTMP(Realtime Message Protocol)，广泛应用于低延时直播，也是编码器和服务器对接的实际标准协议，在PC（Flash）上有最佳观看体验和最佳稳定性。</p>
+
+<p>HLS指Apple的HLS(Http Live Streaming)，本身就是Live（直播）的，不过Vod（点播）也能支持。HLS是Apple平台的标准流媒体协议，和RTMP在PC上一样支持得天衣无缝。</p>
+
+
+
+<h3 id="应用场景-3">应用场景</h3>
+
+<ul><li>跨平台：PC主要的直播方案是RTMP，也有一些库能播放HLS，譬如jwplayer，基于osmf的hls插件也一大堆。所以实际上如果选一种协议能跨PC/Android/IOS，那就是HLS。</li>
+<li>IOS上苛刻的稳定性要求：IOS上最稳定的当然是HLS，稳定性不差于RTMP在PC-flash上的表现。</li>
+<li>友好的CDN分发方式：目前CDN对于RTMP也是基本协议，但是HLS分发的基础是HTTP，所以CDN的接入和分发会比RTMP更加完善。能在各种CDN之间切换，RTMP也能，只是可能需要对接测试。</li>
+<li>简单：HLS作为流媒体协议非常简单，apple支持得也很完善。Android对HLS的支持也会越来越完善。至于DASH/HDS，好像没有什么特别的理由，就像linux已经大行其道而且开放，其他的系统很难再广泛应用。</li>
+</ul>
+
+<p>总之，SRS支持HLS主要是作为输出的分发协议，直播以RTMP+HLS分发，满总各种应用场景。点播以HLS为主。</p>
+
+
+
+<h3 id="delivering-streams">Delivering Streams</h3>
+
+<p>详见下表：</p>
+
+<table>
+<thead>
+<tr>
+  <th align="center">分发</th>
+  <th align="center">平台</th>
+  <th align="center">协议</th>
+  <th align="center">公司</th>
+  <th align="left">说明</th>
+</tr>
+</thead>
+<tbody><tr>
+  <td align="center">RTMP</td>
+  <td align="center">Windows Flash</td>
+  <td align="center">RTMP</td>
+  <td align="center">Adobe</td>
+  <td align="left">主流的低延时分发方式，Adobe对RTMP是Flash原生支持方式，FMS（Adobe Media Server前身），就是Flash Media Server的简写，可见Flash播放RTMP是多么“原生”，就像浏览器打开http网页一样“原生”，经测试，Flash播放RTMP流可以10天以上不间断播放。</td>
+</tr>
+<tr>
+  <td align="center">HLS</td>
+  <td align="center">Apple/Android</td>
+  <td align="center">HTTP</td>
+  <td align="center">Apple/Google</td>
+  <td align="left">延时一个切片以上（一般10秒以上），Apple平台上HLS的效果比PC的RTMP还要好，而且Apple所有设备都支持，Android最初不支持HLS，后来也支持了，但测试发现支持得还不如Apple，不过观看是没有问题，稳定性稍差，所以有些公司专门做Android上的流媒体播放器。</td>
+</tr>
+<tr>
+  <td align="center">HDS</td>
+  <td align="center">-</td>
+  <td align="center">HTTP</td>
+  <td align="center">Adobe</td>
+  <td align="left">Adobe自己的HLS，协议方面做得是复杂而且没有什么好处，国内没有什么应用，传说国外有，像这种东西SRS是绝对不会支持的。</td>
+</tr>
+<tr>
+  <td align="center">DASH</td>
+  <td align="center">-</td>
+  <td align="center">HTTP</td>
+  <td align="center">-</td>
+  <td align="left">Dynamic Adaptive Streaming over HTTP (DASH)，一些公司提出的HLS，国内还没有应用，国外据说有用了，nginx-rtmp好像已经支持了，明显这个还不成熟，SRS是不会支持的。</td>
+</tr>
+</tbody></table>
+
+
+
+
+<h3 id="hls-introduction">HLS Introduction</h3>
+
+<p>HLS是提供一个m3u8地址，Apple的Safari浏览器直接就能打开m3u8地址，譬如：</p>
+
+<pre class="prettyprint hljs-dark"><code class="hljs groovy"><span class="hljs-string">http:</span><span class="hljs-comment">//demo.srs.com/live/livestream.m3u8</span><br></code></pre>
+
+<p>Android不能直接打开，需要使用html5的video标签，然后在浏览器中打开这个页面即可，譬如：</p>
+
+<pre class="prettyprint hljs-dark"><code class="hljs xml"><span class="hljs-comment">&lt;!-- livestream.html --&gt;</span><br><span class="hljs-tag">&lt;<span class="hljs-title">video</span> <span class="hljs-attribute">width</span>=<span class="hljs-value">"640"</span> <span class="hljs-attribute">height</span>=<span class="hljs-value">"360"</span><br>        <span class="hljs-attribute">autoplay</span> <span class="hljs-attribute">controls</span> <span class="hljs-attribute">autobuffer</span> <br>        <span class="hljs-attribute">src</span>=<span class="hljs-value">"http://demo.srs.com/live/livestream.m3u8"</span><br>        <span class="hljs-attribute">type</span>=<span class="hljs-value">"application/vnd.apple.mpegurl"</span>&gt;</span><br><span class="hljs-tag">&lt;/<span class="hljs-title">video</span>&gt;</span><br></code></pre>
+
+<p>HLS的m3u8，是一个ts的列表，也就是告诉浏览器可以播放这些ts文件，譬如：</p>
+
+<pre class="prettyprint hljs-dark"><code class="hljs css"><span class="hljs-id">#EXTM3U</span><br><span class="hljs-id">#EXT-X-VERSION</span><span class="hljs-pseudo">:3</span><br><span class="hljs-id">#EXT-X-MEDIA-SEQUENCE</span><span class="hljs-pseudo">:64</span><br><span class="hljs-id">#EXT-X-TARGETDURATION</span><span class="hljs-pseudo">:12</span><br><span class="hljs-id">#EXTINF</span><span class="hljs-pseudo">:11</span><span class="hljs-class">.550</span><br><span class="hljs-tag">livestream-64</span><span class="hljs-class">.ts</span><br><span class="hljs-id">#EXTINF</span><span class="hljs-pseudo">:5</span><span class="hljs-class">.250</span><br><span class="hljs-tag">livestream-65</span><span class="hljs-class">.ts</span><br><span class="hljs-id">#EXTINF</span><span class="hljs-pseudo">:7</span><span class="hljs-class">.700</span><br><span class="hljs-tag">livestream-66</span><span class="hljs-class">.ts</span><br><span class="hljs-id">#EXTINF</span><span class="hljs-pseudo">:6</span><span class="hljs-class">.850</span><br><span class="hljs-tag">livestream-67</span><span class="hljs-class">.ts</span><br></code></pre>
+
+<p>有几个关键的参数，这些参数在SRS的配置文件中都有配置项：</p>
+
+<ul><li>EXT-X-TARGETDURATION：所有切片的最大时长。有些Apple设备这个参数不正确会无法播放。SRS会自动计算出ts文件的最大时长，然后更新m3u8时会自动更新这个值。用户不必自己配置。</li>
+<li>EXTINF：ts切片的实际时长，SRS提供配置项hls_fragment，但实际上的ts时长还受gop影响，详见下面配置HLS的说明。 <br>
+ts文件的数目：SRS可配置hls_window，指定m3u8中保存多少个切片，SRS会自动清理旧的切片。</li>
+<li>livestream-67.ts：SRS会自动维护ts切片的文件名，在编码器重推之后，这个编号会继续增长，保证流的连续性。直到SRS重启，这个编号才重置为0。</li>
+</ul>
+
+<p>譬如，每个ts切片为10秒，窗口为60秒，那么m3u8中会保存6个ts切片。</p>
+
+
+
+<h3 id="hls-工作流程">HLS 工作流程</h3>
+
+<ol><li rel="1">FFMPEG或FMLE或编码器，推送RTMP流到SRS，编码为H264/AAC（其他编码需要SRS转码）</li>
+<li rel="2">SRS将RTMP切片成TS，并生成M3U8。若流非H264和AAC，则停止输出HLS（可使用SRS转码到SRS其他vhost或流，然后再切HLS）。</li>
+<li rel="3">访问m3u8，srs内置的http服务器（或者通用http服务器）提供HTTP服务。</li>
+</ol>
+
+<p>注意：SRS只需要在Vhost上配置HLS，会自动根据流的app创建目录，但是配置的hls_path必须自己创建</p>
+
+
+
+<h3 id="hls-配置">HLS 配置</h3>
+
+<p>conf/full.conf中的with-hls.vhost.com是HLS配置的实例，可以拷贝到默认的Vhost，例如：</p>
+
+<pre class="prettyprint hljs-dark"><code class="hljs dust"><span class="xml">vhost __defaultVhost__ </span><span class="hljs-expression">{<br>    <span class="hljs-variable">hls</span> {<br>        <span class="hljs-begin-block"># whether the hls is enabled.</span><br>        <span class="hljs-begin-block"># <span class="hljs-keyword">if</span> off</span>, <span class="hljs-variable">donot</span> <span class="hljs-variable">write</span> <span class="hljs-variable">hls</span>(<span class="hljs-variable">ts</span> <span class="hljs-variable">and</span> <span class="hljs-variable">m</span>3<span class="hljs-variable">u</span>8) <span class="hljs-variable">when</span> <span class="hljs-variable">publish.</span><br>        <span class="hljs-begin-block"># <span class="hljs-keyword">default</span></span>: <span class="hljs-variable">off</span><br>        <span class="hljs-variable">enabled</span>         <span class="hljs-variable">on</span>;<br>        <span class="hljs-begin-block"># the hls output path.</span><br>        <span class="hljs-begin-block"># the app dir is auto created under the hls</span>_<span class="hljs-variable">path.</span><br>        <span class="hljs-begin-block"># for example</span>, <span class="hljs-variable">for</span> <span class="hljs-variable">rtmp</span> <span class="hljs-variable">stream</span>:<br>        <span class="hljs-begin-block">#   rtmp</span>://127<span class="hljs-variable">.</span>0<span class="hljs-variable">.</span>0<span class="hljs-variable">.</span>1<span class="hljs-end-block">/live</span><span class="hljs-end-block">/livestream</span><br>        <span class="hljs-begin-block">#   http</span>://127<span class="hljs-variable">.</span>0<span class="hljs-variable">.</span>0<span class="hljs-variable">.</span>1<span class="hljs-end-block">/live</span><span class="hljs-end-block">/livestream.m</span>3<span class="hljs-variable">u</span>8<br>        <span class="hljs-begin-block"># where hls</span>_<span class="hljs-variable">path</span> <span class="hljs-variable">is</span> <span class="hljs-end-block">/hls</span>, <span class="hljs-variable">srs</span> <span class="hljs-variable">will</span> <span class="hljs-variable">create</span> <span class="hljs-variable">the</span> <span class="hljs-variable">following</span> <span class="hljs-variable">files</span>:<br>        <span class="hljs-begin-block">#   </span><span class="hljs-end-block">/hls</span><span class="hljs-end-block">/live       the app dir for all streams.</span><br>        <span class="hljs-begin-block">#   </span><span class="hljs-end-block">/hls</span><span class="hljs-end-block">/live</span><span class="hljs-end-block">/livestream.m</span>3<span class="hljs-variable">u</span>8   <span class="hljs-variable">the</span> <span class="hljs-variable">HLS</span> <span class="hljs-variable">m</span>3<span class="hljs-variable">u</span>8 <span class="hljs-variable">file.</span><br>        <span class="hljs-begin-block">#   </span><span class="hljs-end-block">/hls</span><span class="hljs-end-block">/live</span><span class="hljs-end-block">/livestream-</span>1<span class="hljs-variable">.ts</span>   <span class="hljs-variable">the</span> <span class="hljs-variable">HLS</span> <span class="hljs-variable">media</span><span class="hljs-end-block">/ts file.</span><br>        <span class="hljs-begin-block"># in a word</span>, <span class="hljs-variable">the</span> <span class="hljs-variable">hls</span>_<span class="hljs-variable">path</span> <span class="hljs-variable">is</span> <span class="hljs-variable">for</span> <span class="hljs-variable">vhost.</span><br>        <span class="hljs-begin-block"># <span class="hljs-keyword">default</span></span>: <span class="hljs-variable">.</span><span class="hljs-end-block">/objs</span><span class="hljs-end-block">/nginx</span><span class="hljs-end-block">/html</span><br>        <span class="hljs-variable">hls</span>_<span class="hljs-variable">path</span>        <span class="hljs-end-block">/data</span><span class="hljs-end-block">/nginx</span><span class="hljs-end-block">/html</span>;<br>        <span class="hljs-begin-block"># the hls fragment in seconds</span>, <span class="hljs-variable">the</span> <span class="hljs-variable">duration</span> <span class="hljs-variable">of</span> <span class="hljs-variable">a</span> <span class="hljs-variable">piece</span> <span class="hljs-variable">of</span> <span class="hljs-variable">ts.</span><br>        <span class="hljs-begin-block"># <span class="hljs-keyword">default</span></span>: 10<br>        <span class="hljs-variable">hls</span>_<span class="hljs-variable">fragment</span>    10;<br>        <span class="hljs-begin-block"># the hls window in seconds</span>, <span class="hljs-variable">the</span> <span class="hljs-variable">number</span> <span class="hljs-variable">of</span> <span class="hljs-variable">ts</span> <span class="hljs-variable">in</span> <span class="hljs-variable">m</span>3<span class="hljs-variable">u</span>8<span class="hljs-variable">.</span><br>        <span class="hljs-begin-block"># <span class="hljs-keyword">default</span></span>: 60<br>        <span class="hljs-variable">hls</span>_<span class="hljs-variable">window</span>      60;<br>    }</span><span class="xml"><br>}</span><br></code></pre>
+
+<p>其中hls配置就是HLS的配置，主要配置项如下：</p>
+
+<ul><li>enabled：是否开启HLS，on/off，默认off。</li>
+<li><p>hls_path：HLS的m3u8和ts文件保存的路径。SRS会自动加上app和stream名称。譬如：</p>
+
+<pre class="prettyprint hljs-dark"><code class="hljs groovy">对于RTMP流：<span class="hljs-string">rtmp:</span><span class="hljs-comment">//localhost/live/livestream</span><br>HLS配置路径：hls_path        <span class="hljs-regexp">/data/</span>nginx/html;<br>那么会生成以下文件：<br><span class="hljs-regexp">/data/</span>nginx<span class="hljs-regexp">/html/</span>live/livestream.m3u8<br><span class="hljs-regexp">/data/</span>nginx<span class="hljs-regexp">/html/</span>live/livestream-<span class="hljs-number">0.</span>ts<br><span class="hljs-regexp">/data/</span>nginx<span class="hljs-regexp">/html/</span>live/livestream-<span class="hljs-number">1.</span>ts<br><span class="hljs-regexp">/data/</span>nginx<span class="hljs-regexp">/html/</span>live/livestream-<span class="hljs-number">2.</span>ts<br>最后的HLS地址为：<span class="hljs-string">http:</span><span class="hljs-comment">//localhost/live/livestream.m3u8</span><br></code></pre></li>
+<li><p>hls_fragment：秒，指定ts切片的最小长度。实际上ts文件的长度由以下公式决定：</p>
+
+<pre class="prettyprint hljs-dark"><code class="hljs cpp">ts文件时长 = max(hls_fragment, gop_size)<br>hls_fragment：配置文件中的长度。譬如：<span class="hljs-number">5</span>秒。<br>gop_size：编码器配置的gop的长度，譬如ffmpeg指定fps为<span class="hljs-number">20</span>帧/秒，gop为<span class="hljs-number">200</span>帧，则gop_size=gop/fps=<span class="hljs-number">10</span>秒。<br>那么，最终ts的时长为max(<span class="hljs-number">5</span>, <span class="hljs-number">10</span>) = <span class="hljs-number">10</span>秒。这也是为什么有些流配置了hls_fragment，但是ts时长仍然比这个大的原因。<br></code></pre></li>
+<li><p>hls_window：秒，指定HLS窗口大小，即m3u8中ts文件的时长之和，超过总时长后，丢弃第一个m3u8中的第一个切片，直到ts的总时长在这个配置项范围之内。即SRS保证下面的公式：</p>
+
+<pre class="prettyprint hljs-dark"><code class="hljs stylus">hls_window &gt;= <span class="hljs-function"><span class="hljs-title">sum</span><span class="hljs-params">(m3u8中每个ts的时长)</span></span><br></code></pre>
+
+<p>部署分发HLS的实例，参考：<a href="https://github.com/ossrs/srs/wiki/v1_CN_SampleHLS" target="_blank">Usage：HLS</a></p></li>
+</ul>
+
+
+
+<h3 id="hlsaudioonly">HLSAudioOnly</h3>
+
+<p>SRS支持分发HLS纯音频流，当RTMP流没有视频，且音频为aac（可以使用转码转为aac，参考<a href="https://github.com/ossrs/srs/wiki/v1_CN_SampleTranscode2HLS" target="_blank">Usage: Transcode2HLS</a>），SRS只切片音频。</p>
+
+<p>若RTMP流中已经有视频和音频，需要支持纯音频HLS流，可以用转码将视频去掉，参考：<a href="https://github.com/ossrs/srs/wiki/v1_CN_FFMPEG#%E7%A6%81%E7%94%A8" target="_blank">转码: 禁用流</a>。然后分发音频流。</p>
+
+<p>分发纯音频流不需要特殊配置，和HLS分发一样，参考：<a href="https://github.com/ossrs/srs/wiki/v1_CN_SampleHLS" target="_blank">Usage：HLS</a></p>
+
+
+
+<h3 id="hls-and-forward">HLS And Forward</h3>
+
+<p>Forward的流和普通流不做区分，若forward的流所在的VHOST配置了HLS，一样会应用HLS配置进行切片。</p>
+
+<p>因此，可以对原始流进行Transcode之后，保证流符合h.264/aac的规范，然后forward到多个配置了HLS的VHOST进行切片。支持多个源站的热备。</p>
+
+
+
+<h3 id="hls-and-transcode">HLS And Transcode</h3>
+
+<p>HLS要求RTMP流的编码为h.264+aac，否则会自动禁用HLS，会出现RTMP流能看HLS流不能看（或者看到的HLS是之前的流）。</p>
+
+<p>Transcode将RTMP流转码后，可以让SRS接入任何编码的RTMP流，然后转换成HLS要求的h.264/aac编码方式。</p>
+
+<p>配置Transcode时，若需要控制ts长度，需要<a href="http://ffmpeg.org/ffmpeg-codecs.html#Options-7" target="_blank">配置ffmpeg编码的gop</a>，譬如：</p>
+
+<pre class="prettyprint hljs-dark"><code class="hljs nginx"><span class="hljs-title">vhost</span> hls.transcode.vhost.com {<br>    <span class="hljs-title">transcode</span> {<br>        <span class="hljs-title">enabled</span>     <span class="hljs-built_in">on</span>;<br>        <span class="hljs-title">ffmpeg</span>      ./objs/ffmpeg/bin/ffmpeg;<br>        <span class="hljs-title">engine</span> hls {<br>            <span class="hljs-title">enabled</span>         <span class="hljs-built_in">on</span>;<br>            <span class="hljs-title">vfilter</span> {<br>            }<br>            <span class="hljs-title">vcodec</span>          libx264;<br>            <span class="hljs-title">vbitrate</span>        <span class="hljs-number">500</span>;<br>            <span class="hljs-title">vfps</span>            <span class="hljs-number">20</span>;<br>            <span class="hljs-title">vwidth</span>          <span class="hljs-number">768</span>;<br>            <span class="hljs-title">vheight</span>         <span class="hljs-number">320</span>;<br>            <span class="hljs-title">vthreads</span>        <span class="hljs-number">2</span>;<br>            <span class="hljs-title">vprofile</span>        baseline;<br>            <span class="hljs-title">vpreset</span>         superfast;<br>            <span class="hljs-title">vparams</span> {<br>                <span class="hljs-title">g</span>           <span class="hljs-number">100</span>;<br>            }<br>            <span class="hljs-title">acodec</span>          libaacplus;<br>            <span class="hljs-title">abitrate</span>        <span class="hljs-number">45</span>;<br>            <span class="hljs-title">asample_rate</span>    <span class="hljs-number">44100</span>;<br>            <span class="hljs-title">achannels</span>       <span class="hljs-number">2</span>;<br>            <span class="hljs-title">aparams</span> {<br>            }<br>            <span class="hljs-title">output</span>          <span class="hljs-url">rtmp://127.0.0.1:[port]/[app]?vhost=[vhost]/[stream]_[engine]</span>;<br>        }<br>    }<br>}<br></code></pre>
+
+<p>该FFMPEG转码参数，指定gop时长为100/20=5秒，fps帧率（vfps=20），gop帧数（g=100）。</p>
+
+
+
+<h3 id="hls-multiple-bitrate">HLS Multiple Bitrate</h3>
+
+<p><strong>SRS目前不支持HLS自适应码流，需要调研这个功能。</strong></p>
+
+
+
+<h3 id="hls-m3u8-examples">HLS M3u8 Examples</h3>
+
+<pre class="prettyprint hljs-dark"><code class="hljs css"><span class="hljs-id">#EXTM3U</span><br><span class="hljs-id">#EXT-X-VERSION</span><span class="hljs-pseudo">:3</span><br><span class="hljs-id">#EXT-X-ALLOW-CACHE</span><span class="hljs-pseudo">:NO</span><br><span class="hljs-id">#EXT-X-TARGETDURATION</span><span class="hljs-pseudo">:13</span><br><span class="hljs-id">#EXT-X-MEDIA-SEQUENCE</span><span class="hljs-pseudo">:430</span><br><span class="hljs-id">#EXTINF</span><span class="hljs-pseudo">:11</span><span class="hljs-class">.800</span><br><span class="hljs-tag">news-430</span><span class="hljs-class">.ts</span><br><span class="hljs-id">#EXTINF</span><span class="hljs-pseudo">:10</span><span class="hljs-class">.120</span><br><span class="hljs-tag">news-431</span><span class="hljs-class">.ts</span><br><span class="hljs-id">#EXTINF</span><span class="hljs-pseudo">:11</span><span class="hljs-class">.160</span><br><span class="hljs-tag">news-432</span><span class="hljs-class">.ts</span><br></code></pre>
+
+<p>event.m3u8</p>
+
+<pre class="prettyprint hljs-dark"><code class="hljs css"><span class="hljs-id">#EXTM3U</span><br><span class="hljs-id">#EXT-X-VERSION</span><span class="hljs-pseudo">:3</span><br><span class="hljs-id">#EXT-X-ALLOW-CACHE</span><span class="hljs-pseudo">:NO</span><br><span class="hljs-id">#EXT-X-TARGETDURATION</span><span class="hljs-pseudo">:13</span><br><span class="hljs-id">#EXT-X-MEDIA-SEQUENCE</span><span class="hljs-pseudo">:430</span><br><span class="hljs-id">#EXT-X-PLAYLIST-TYPE</span><span class="hljs-pseudo">:EVENT</span><br><span class="hljs-id">#EXTINF</span><span class="hljs-pseudo">:11</span><span class="hljs-class">.800</span><br><span class="hljs-tag">news-430</span><span class="hljs-class">.ts</span><br><span class="hljs-id">#EXTINF</span><span class="hljs-pseudo">:10</span><span class="hljs-class">.120</span><br><span class="hljs-tag">news-431</span><span class="hljs-class">.ts</span><br><span class="hljs-id">#EXTINF</span><span class="hljs-pseudo">:11</span><span class="hljs-class">.160</span><br><span class="hljs-tag">news-432</span><span class="hljs-class">.ts</span><br></code></pre>
+
+<p>vod.m3u8</p>
+
+<pre class="prettyprint hljs-dark"><code class="hljs css"><span class="hljs-id">#EXTM3U</span><br><span class="hljs-id">#EXT-X-VERSION</span><span class="hljs-pseudo">:3</span><br><span class="hljs-id">#EXT-X-ALLOW-CACHE</span><span class="hljs-pseudo">:NO</span><br><span class="hljs-id">#EXT-X-TARGETDURATION</span><span class="hljs-pseudo">:13</span><br><span class="hljs-id">#EXT-X-MEDIA-SEQUENCE</span><span class="hljs-pseudo">:430</span><br><span class="hljs-id">#EXT-X-PLAYLIST-TYPE</span><span class="hljs-pseudo">:VOD</span><br><span class="hljs-id">#EXTINF</span><span class="hljs-pseudo">:11</span><span class="hljs-class">.800</span><br><span class="hljs-tag">news-430</span><span class="hljs-class">.ts</span><br><span class="hljs-id">#EXTINF</span><span class="hljs-pseudo">:10</span><span class="hljs-class">.120</span><br><span class="hljs-tag">news-431</span><span class="hljs-class">.ts</span><br><span class="hljs-id">#EXTINF</span><span class="hljs-pseudo">:11</span><span class="hljs-class">.160</span><br><span class="hljs-tag">news-432</span><span class="hljs-class">.ts</span><br><span class="hljs-id">#EXT-X-ENDLIST</span><br></code></pre>
+
+<p>loop.m3u8</p>
+
+<pre class="prettyprint hljs-dark"><code class="hljs stylus"><span class="hljs-id">#EXTM3U</span><br><span class="hljs-id">#EXT-X-VERSION</span>:<span class="hljs-number">3</span><br><span class="hljs-id">#EXT-X-ALLOW-CACHE</span>:NO<br><span class="hljs-id">#EXT-X-TARGETDURATION</span>:<span class="hljs-number">13</span><br><span class="hljs-id">#EXT-X-MEDIA-SEQUENCE</span>:<span class="hljs-number">430</span><br><span class="hljs-id">#EXT-X-PLAYLIST-TYPE</span>:VOD<br><span class="hljs-id">#EXTINF</span>:<span class="hljs-number">11.800</span><br>news-<span class="hljs-number">430</span><span class="hljs-class">.ts</span><br><span class="hljs-id">#EXTINF</span>:<span class="hljs-number">10.120</span><br>news-<span class="hljs-number">431</span><span class="hljs-class">.ts</span><br><span class="hljs-id">#EXT-X-DISCONTINUITY</span><br><span class="hljs-id">#EXTINF</span>:<span class="hljs-number">11.952</span><br>news-<span class="hljs-number">430</span><span class="hljs-class">.ts</span><br><span class="hljs-id">#EXTINF</span>:<span class="hljs-number">12.640</span><br>news-<span class="hljs-number">431</span><span class="hljs-class">.ts</span><br><span class="hljs-id">#EXTINF</span>:<span class="hljs-number">11.160</span><br>news-<span class="hljs-number">432</span><span class="hljs-class">.ts</span><br><span class="hljs-id">#EXT-X-DISCONTINUITY</span><br><span class="hljs-id">#EXTINF</span>:<span class="hljs-number">11.751</span><br>news-<span class="hljs-number">430</span><span class="hljs-class">.ts</span><br><span class="hljs-id">#EXTINF</span>:<span class="hljs-number">2.040</span><br>news-<span class="hljs-number">431</span><span class="hljs-class">.ts</span><br>#EXT-X-ENDLIST<br></code></pre>
+
+
+
+<h3 id="srs-how-to-support-hls">SRS How to Support HLS</h3>
+
+<p>SRS的HLS主要参考了nginx-rtmp的HLS实现方式，SRS没有做什么事情，都是nginx-rtmp实现的。而分发m3u8和ts文件，也是使用nginx分发的。</p>
+
+<p>SRS只是读了遍ts的标准文档，把相关部分加了注释而已。譬如下面这段：</p>
+
+<pre class="prettyprint hljs-dark"><code class="hljs cpp"><span class="hljs-comment">// @see: ngx_rtmp_mpegts.c</span><br><span class="hljs-comment">// <span class="hljs-doctag">TODO:</span> support full mpegts feature in future.</span><br><span class="hljs-keyword">class</span> SrsMpegtsWriter<br>{<br><span class="hljs-keyword">public</span>:<br>    <span class="hljs-function"><span class="hljs-keyword">static</span> <span class="hljs-keyword">int</span> <span class="hljs-title">write_frame</span><span class="hljs-params">(<span class="hljs-keyword">int</span> fd, SrsMpegtsFrame* frame, SrsCodecBuffer* buffer)</span><br>    </span>{<br>        <span class="hljs-keyword">int</span> ret = ERROR_SUCCESS;<br><br>        <span class="hljs-keyword">if</span> (!buffer-&gt;bytes || buffer-&gt;size &lt;= <span class="hljs-number">0</span>) {<br>            <span class="hljs-keyword">return</span> ret;<br>        }<br><br>        <span class="hljs-keyword">char</span>* last = buffer-&gt;bytes + buffer-&gt;size;<br>        <span class="hljs-keyword">char</span>* pos = buffer-&gt;bytes;<br><br>        <span class="hljs-keyword">bool</span> first = <span class="hljs-literal">true</span>;<br>        <span class="hljs-keyword">while</span> (pos &lt; last) {<br>            <span class="hljs-keyword">static</span> <span class="hljs-keyword">char</span> packet[<span class="hljs-number">188</span>];<br>            <span class="hljs-keyword">char</span>* p = packet;<br><br>            frame-&gt;cc++;<br><br>            <span class="hljs-comment">// sync_byte; //8bits</span><br>            *p++ = <span class="hljs-number">0x47</span>;<br>            <span class="hljs-comment">// pid; //13bits</span><br>            *p++ = (frame-&gt;pid &gt;&gt; <span class="hljs-number">8</span>) &amp; <span class="hljs-number">0x1f</span>;<br>            <span class="hljs-comment">// payload_unit_start_indicator; //1bit</span><br>            <span class="hljs-keyword">if</span> (first) {<br>                p[-<span class="hljs-number">1</span>] |= <span class="hljs-number">0x40</span>;<br>            }<br>            *p++ = frame-&gt;pid;<br><br>            <span class="hljs-comment">// transport_scrambling_control; //2bits</span><br>            <span class="hljs-comment">// adaption_field_control; //2bits, 0x01: PayloadOnly</span><br>            <span class="hljs-comment">// continuity_counter; //4bits</span><br>            *p++ = <span class="hljs-number">0x10</span> | (frame-&gt;cc &amp; <span class="hljs-number">0x0f</span>);<br><br>            <span class="hljs-keyword">if</span> (first) {<br>                first = <span class="hljs-literal">false</span>;<br>                <span class="hljs-keyword">if</span> (frame-&gt;key) {<br>                    p[-<span class="hljs-number">1</span>] |= <span class="hljs-number">0x20</span>; <span class="hljs-comment">// Both Adaption and Payload</span><br>                    *p++ = <span class="hljs-number">7</span>;    <span class="hljs-comment">// size</span><br>                    *p++ = <span class="hljs-number">0x50</span>; <span class="hljs-comment">// random access + PCR</span><br>                    p = write_pcr(p, frame-&gt;dts - SRS_HLS_DELAY);<br>                }<br><br>                <span class="hljs-comment">// PES header</span><br>                <span class="hljs-comment">// packet_start_code_prefix; //24bits, '00 00 01'</span><br>                *p++ = <span class="hljs-number">0x00</span>;<br>                *p++ = <span class="hljs-number">0x00</span>;<br>                *p++ = <span class="hljs-number">0x01</span>;<br>                <span class="hljs-comment">//8bits</span><br>                *p++ = frame-&gt;sid;<br><br>                <span class="hljs-comment">// pts(33bits) need 5bytes.</span><br>                <span class="hljs-keyword">u_int8_t</span> header_size = <span class="hljs-number">5</span>;<br>                <span class="hljs-keyword">u_int8_t</span> flags = <span class="hljs-number">0x80</span>; <span class="hljs-comment">// pts</span><br><br>                <span class="hljs-comment">// dts(33bits) need 5bytes also</span><br>                <span class="hljs-keyword">if</span> (frame-&gt;dts != frame-&gt;pts) {<br>                    header_size += <span class="hljs-number">5</span>;<br>                    flags |= <span class="hljs-number">0x40</span>; <span class="hljs-comment">// dts</span><br>                }<br><br>                <span class="hljs-comment">// 3bytes: flag fields from PES_packet_length to PES_header_data_length</span><br>                <span class="hljs-keyword">int</span> pes_size = (last - pos) + header_size + <span class="hljs-number">3</span>;<br>                <span class="hljs-keyword">if</span> (pes_size &gt; <span class="hljs-number">0xffff</span>) {<br>                    <span class="hljs-comment">/**<br>                    * when actual packet length &gt; 0xffff(65535),<br>                    * which exceed the max u_int16_t packet length,<br>                    * use 0 packet length, the next unit start indicates the end of packet.<br>                    */</span><br>                    pes_size = <span class="hljs-number">0</span>;<br>                }<br><br>                <span class="hljs-comment">// PES_packet_length; //16bits</span><br>                *p++ = (pes_size &gt;&gt; <span class="hljs-number">8</span>);<br>                *p++ = pes_size;<br><br>                <span class="hljs-comment">// PES_scrambling_control; //2bits, '10'</span><br>                <span class="hljs-comment">// PES_priority; //1bit</span><br>                <span class="hljs-comment">// data_alignment_indicator; //1bit</span><br>                <span class="hljs-comment">// copyright; //1bit</span><br>                <span class="hljs-comment">// original_or_copy; //1bit </span><br>                *p++ = <span class="hljs-number">0x80</span>; <span class="hljs-comment">/* H222 */</span><br><br>                <span class="hljs-comment">// PTS_DTS_flags; //2bits</span><br>                <span class="hljs-comment">// ESCR_flag; //1bit</span><br>                <span class="hljs-comment">// ES_rate_flag; //1bit</span><br>                <span class="hljs-comment">// DSM_trick_mode_flag; //1bit</span><br>                <span class="hljs-comment">// additional_copy_info_flag; //1bit</span><br>                <span class="hljs-comment">// PES_CRC_flag; //1bit</span><br>                <span class="hljs-comment">// PES_extension_flag; //1bit</span><br>                *p++ = flags;<br><br>                <span class="hljs-comment">// PES_header_data_length; //8bits</span><br>                *p++ = header_size;<br><br>                <span class="hljs-comment">// pts; // 33bits</span><br>                p = write_pts(p, flags &gt;&gt; <span class="hljs-number">6</span>, frame-&gt;pts + SRS_HLS_DELAY);<br><br>                <span class="hljs-comment">// dts; // 33bits</span><br>                <span class="hljs-keyword">if</span> (frame-&gt;dts != frame-&gt;pts) {<br>                    p = write_pts(p, <span class="hljs-number">1</span>, frame-&gt;dts + SRS_HLS_DELAY);<br>                }<br>            }<br><br>            <span class="hljs-keyword">int</span> body_size = <span class="hljs-keyword">sizeof</span>(packet) - (p - packet);<br>            <span class="hljs-keyword">int</span> in_size = last - pos;<br><br>            <span class="hljs-keyword">if</span> (body_size &lt;= in_size) {<br>                <span class="hljs-built_in">memcpy</span>(p, pos, body_size);<br>                pos += body_size;<br>            } <span class="hljs-keyword">else</span> {<br>                p = fill_stuff(p, packet, body_size, in_size);<br>                <span class="hljs-built_in">memcpy</span>(p, pos, in_size);<br>                pos = last;<br>            }<br><br>            <span class="hljs-comment">// write ts packet</span><br>            <span class="hljs-keyword">if</span> (::write(fd, packet, <span class="hljs-keyword">sizeof</span>(packet)) != <span class="hljs-keyword">sizeof</span>(packet)) {<br>                ret = ERROR_HLS_WRITE_FAILED;<br>                srs_error(<span class="hljs-string">"write ts file failed. ret=%d"</span>, ret);<br>                <span class="hljs-keyword">return</span> ret;<br>            }<br>        }<br><br>        <span class="hljs-keyword">return</span> ret;<br>    }<br>};<br></code></pre>
+
+
+
+<h2 id="ffmpeg-live-streaming-transcode">FFMPEG – Live Streaming Transcode</h2>
+
+<p>SRS可以对推送到SRS的RTMP流进行转码，然后输出到RTMP服务器（也可以是SRS自己）。</p>
+
+
+
+<h3 id="use-scenario">Use Scenario</h3>
+
+<p>FFMPEG的重要应用场景包括：</p>
+
+<ul><li>推送一路高码率，转多路输出。譬如：游戏直播中，推送一路1080p流到SRS，SRS可以转码输出1080p/720p/576p多路，低码率可以给移动设备观看。这样节省了推流带宽（一般源站为BGP带宽，很贵），也减轻了客户端压力（譬如客户端边玩游戏边直播）。</li>
+<li>支持多屏输出。譬如：网页推流（主播）编码为vp6/mp3或speex，推流到SRS后无法支持HLS（要求h264+aac），可以转码成h264+aac后切片成HLS或者推送到其他服务器再分发。</li>
+<li>加水印。适用于需要对流进行加水印的情况，譬如打上自己的logo。SRS支持文字水印和图片水印，也可以支持视频作为水印，或者将两路流叠加（参考ffmpeg的用法）。</li>
+<li>其他滤镜：SRS支持所有ffmpeg的滤镜。</li>
+</ul>
+
+
+
+<h3 id="workflow">Workflow</h3>
+
+<p>SRS转码的主要流程包括：</p>
+
+<ul><li>编码器推送RTMP流到SRS的vhost。</li>
+<li>SRS的vhost若配置了转码，则进行转码。</li>
+<li>转码后，按照配置，推送到SRS本身或者其他RTMP服务器。</li>
+</ul>
+
+
+
+<h3 id="transcode-config">Transcode Config</h3>
+
+<p>SRS可以对vhost的所有的流转码，或者对某些app的流转码，或者对某些流转码。</p>
+
+<pre class="prettyprint hljs-dark"><code class="hljs nginx"><span class="hljs-title">listen</span>              <span class="hljs-number">1935</span>;<br><span class="hljs-title">vhost</span> __defaultVhost__ {<br>    <span class="hljs-comment"># 对所有流转码</span><br>    <span class="hljs-title">transcode</span> {<br>        <span class="hljs-title">enabled</span>     <span class="hljs-built_in">on</span>;<br>        <span class="hljs-title">ffmpeg</span>      ./objs/ffmpeg/bin/ffmpeg;<br>        <span class="hljs-title">engine</span> ff {<br>            <span class="hljs-comment"># whether the engine is enabled</span><br>            <span class="hljs-comment"># default: off.</span><br>            <span class="hljs-title">enabled</span>         <span class="hljs-built_in">on</span>;<br>            <span class="hljs-comment"># ffmpeg filters, follows the main input.</span><br>            <span class="hljs-title">vfilter</span> {<br>            }<br>            <span class="hljs-comment"># video encoder name. can be:</span><br>            <span class="hljs-comment"># libx264: use h.264(libx264) video encoder.</span><br>            <span class="hljs-comment"># copy: donot encoder the video stream, copy it.</span><br>            <span class="hljs-comment"># vn: disable video output.</span><br>            <span class="hljs-title">vcodec</span>          libx264;<br>            <span class="hljs-comment"># video bitrate, in kbps</span><br>            <span class="hljs-title">vbitrate</span>        <span class="hljs-number">1500</span>;<br>            <span class="hljs-comment"># video framerate.</span><br>            <span class="hljs-title">vfps</span>            <span class="hljs-number">25</span>;<br>            <span class="hljs-comment"># video width, must be even numbers.</span><br>            <span class="hljs-title">vwidth</span>          <span class="hljs-number">768</span>;<br>            <span class="hljs-comment"># video height, must be even numbers.</span><br>            <span class="hljs-title">vheight</span>         <span class="hljs-number">320</span>;<br>            <span class="hljs-comment"># the max threads for ffmpeg to used.</span><br>            <span class="hljs-title">vthreads</span>        <span class="hljs-number">12</span>;<br>            <span class="hljs-comment"># x264 profile, @see x264 -help, can be:</span><br>            <span class="hljs-comment"># high,main,baseline</span><br>            <span class="hljs-title">vprofile</span>        main;<br>            <span class="hljs-comment"># x264 preset, @see x264 -help, can be: </span><br>            <span class="hljs-comment"># ultrafast,superfast,veryfast,faster,fast</span><br>            <span class="hljs-comment"># medium,slow,slower,veryslow,placebo</span><br>            <span class="hljs-title">vpreset</span>         medium;<br>            <span class="hljs-comment"># other x264 or ffmpeg video params</span><br>            <span class="hljs-title">vparams</span> {<br>            }<br>            <span class="hljs-comment"># audio encoder name. can be:</span><br>            <span class="hljs-comment"># libaacplus: use aac(libaacplus) audio encoder.</span><br>            <span class="hljs-comment"># copy: donot encoder the audio stream, copy it.</span><br>            <span class="hljs-comment"># an: disable audio output.</span><br>            <span class="hljs-title">acodec</span>          libaacplus;<br>            <span class="hljs-comment"># audio bitrate, in kbps. [16, 72] for libaacplus.</span><br>            <span class="hljs-title">abitrate</span>        <span class="hljs-number">70</span>;<br>            <span class="hljs-comment"># audio sample rate. for flv/rtmp, it must be:</span><br>            <span class="hljs-comment"># 44100,22050,11025,5512</span><br>            <span class="hljs-title">asample_rate</span>    <span class="hljs-number">44100</span>;<br>            <span class="hljs-comment"># audio channel, 1 for mono, 2 for stereo.</span><br>            <span class="hljs-title">achannels</span>       <span class="hljs-number">2</span>;<br>            <span class="hljs-comment"># other ffmpeg audio params</span><br>            <span class="hljs-title">aparams</span> {<br>            }<br>            <span class="hljs-comment"># output stream. variables:</span><br>            <span class="hljs-comment"># [vhost] the input stream vhost.</span><br>            <span class="hljs-comment"># [port] the intput stream port.</span><br>            <span class="hljs-comment"># [app] the input stream app.</span><br>            <span class="hljs-comment"># [stream] the input stream name.</span><br>            <span class="hljs-comment"># [engine] the tanscode engine name.</span><br>            <span class="hljs-title">output</span>          <span class="hljs-url">rtmp://127.0.0.1:[port]/[app]?vhost=[vhost]/[stream]_[engine]</span>;<br>        }<br>    }<br>}<br></code></pre>
+
+<p>该配置对频道的所有流转码。譬如：</p>
+
+<ul><li>推送流：rtmp://dev:1935/live/livestream</li>
+<li>观看原始流：rtmp://dev:1935/live/livestream</li>
+<li>观看转码流：rtmp://dev:1935/live/livestream_ff</li>
+</ul>
+
+<p>输出配置使用了变量替换，主要的参数是：</p>
+
+<ul><li>[vhost] 输入流的vhost。譬如：dev</li>
+<li>[port] 输入流的端口。譬如：1935</li>
+<li>[app] 输入流的app。譬如：live</li>
+<li>[stream] 输入流名称。譬如：livestream</li>
+<li>[engine] 转码engine名称，engine后面就是名称。譬如：ff 注意：转码会使用自动检测，保证推送到自己的流不会被再次转码。但转码推送到SRS自己的流可以被切片成HLS。譬如，若开启了HLS，上面的live/livestream，和转码出来的流live/livestream_ff都能观看HLS。</li>
+</ul>
+
+<p>对app或流转码时，只要在transcode后面加app和stream就可以。譬如：</p>
+
+<pre class="prettyprint hljs-dark"><code class="hljs nginx"><span class="hljs-title">listen</span>              <span class="hljs-number">1935</span>;<br><span class="hljs-title">vhost</span> __defaultVhost__ {<br>    <span class="hljs-comment"># 对app为live的所有流转码</span><br>    <span class="hljs-title">transcode</span> live{<br>    }<br>}<br></code></pre>
+
+<p>以及对指定的流转码：</p>
+
+<pre class="prettyprint hljs-dark"><code class="hljs nginx"><span class="hljs-title">listen</span>              <span class="hljs-number">1935</span>;<br><span class="hljs-title">vhost</span> __defaultVhost__ {<br>    <span class="hljs-comment"># 对app为live并且流名称为livestream的流转码</span><br>    <span class="hljs-title">transcode</span> live/livestream{<br>    }<br>}<br></code></pre>
+
+
+
+<h3 id="transcode-rulers">Transcode Rulers</h3>
+
+<p>SRS的转码参数全是FFMPEG的参数，有些参数SRS做了自定义，见下表。</p>
+
+<table>
+<thead>
+<tr>
+  <th align="left">SRS参数</th>
+  <th align="left">FFMPEG参数</th>
+  <th align="left">实例</th>
+  <th align="left">说明</th>
+</tr>
+</thead>
+<tbody><tr>
+  <td align="left">vcodec</td>
+  <td align="left">vcodec</td>
+  <td align="left">ffmpeg … -vcodec libx264 …</td>
+  <td align="left">指定视频编码器</td>
+</tr>
+<tr>
+  <td align="left">vbitrate</td>
+  <td align="left">b:v</td>
+  <td align="left">ffmpeg … -b:v 500000 …</td>
+  <td align="left">输出的视频码率</td>
+</tr>
+<tr>
+  <td align="left">vfps</td>
+  <td align="left">r</td>
+  <td align="left">ffmpeg … -r 25 …</td>
+  <td align="left">输出的视频帧率</td>
+</tr>
+<tr>
+  <td align="left">vwidth/vheight</td>
+  <td align="left">s</td>
+  <td align="left">ffmpeg … -s 400x300 -aspect 400:300 …</td>
+  <td align="left">输出的视频宽度x高度，以及宽高比</td>
+</tr>
+<tr>
+  <td align="left">vthreads</td>
+  <td align="left">threads</td>
+  <td align="left">ffmpeg … -threads 8 …</td>
+  <td align="left">编码线程数</td>
+</tr>
+<tr>
+  <td align="left">vprofile</td>
+  <td align="left">profile:v</td>
+  <td align="left">ffmpeg … -profile:v high …</td>
+  <td align="left">编码x264的profile</td>
+</tr>
+<tr>
+  <td align="left">vpreset</td>
+  <td align="left">preset</td>
+  <td align="left">ffmpeg … -preset medium …</td>
+  <td align="left">编码x264的preset</td>
+</tr>
+<tr>
+  <td align="left">acodec</td>
+  <td align="left">acodec</td>
+  <td align="left">ffmpeg … -acodec libaacplus …</td>
+  <td align="left">音频编码器</td>
+</tr>
+<tr>
+  <td align="left">abitrate</td>
+  <td align="left">b:a</td>
+  <td align="left">ffmpeg … -b:a 70000 …</td>
+  <td align="left">音频输出码率。libaacplus：16-72k</td>
+</tr>
+<tr>
+  <td align="left">asample_rate</td>
+  <td align="left">ar</td>
+  <td align="left">ffmpeg … -ar 44100 …</td>
+  <td align="left">音频采样率</td>
+</tr>
+<tr>
+  <td align="left">achannels</td>
+  <td align="left">ac</td>
+  <td align="left">ffmpeg … -ac 2 …</td>
+  <td align="left">音频声道</td>
+</tr>
+</tbody></table>
+
+
+<p>另外，还有三个是可以加其他ffmpeg参数：</p>
+
+<ul><li>vfilter：添加在vcodec之前的滤镜参数。</li>
+<li>vparams：添加在vcodec之后，acodec之前的视频编码参数。</li>
+<li>aparams：添加在acodec之后，-y之前的音频编码参数。 </li>
+</ul>
+
+<p>这些参数应用的顺序是： <br>
+<code>ffmpeg -f flv -i &lt;input_rtmp&gt; {vfilter} -vcodec ... {vparams} -acodec ... {aparams} -f flv -y {output}</code></p>
+
+<p>具体参数可以查看SRS的日志，譬如：</p>
+
+<pre class="prettyprint hljs-dark"><code class="hljs cpp">[<span class="hljs-number">2014</span>-<span class="hljs-number">02</span>-<span class="hljs-number">28</span> <span class="hljs-number">21</span>:<span class="hljs-number">38</span>:<span class="hljs-number">09.603</span>][<span class="hljs-number">4</span>][trace][start] start transcoder, <br><span class="hljs-built_in">log</span>: ./objs/logs/encoder-__defaultVhost__-live-livestream.<span class="hljs-built_in">log</span>, <br>params: ./objs/ffmpeg/bin/ffmpeg -f flv -i <br>rtmp:<span class="hljs-comment">//127.0.0.1:1935/live?vhost=__defaultVhost__/livestream </span><br>-vcodec libx264 -b:v <span class="hljs-number">500000</span> -r <span class="hljs-number">25.00</span> -s <span class="hljs-number">768</span>x320 -aspect <span class="hljs-number">768</span>:<span class="hljs-number">320</span> <br>-threads <span class="hljs-number">12</span> -profile:v main -preset medium -acodec libaacplus <br>-b:a <span class="hljs-number">70000</span> -ar <span class="hljs-number">44100</span> -ac <span class="hljs-number">2</span> -f flv <br>-y rtmp:<span class="hljs-comment">//127.0.0.1:1935/live?vhost=__defaultVhost__/livestream_ff </span><br></code></pre>
+
+
+
+<h3 id="ffmpeg-log-path">FFMPEG Log Path</h3>
+
+<p>FFMPEG启动后，SRS会将stdout和stderr都定向到日志文件，譬如./objs/logs/encoder-<strong>defaultVhost</strong>-live-livestream.log，有时候日志会比较大。可以配置ffmpeg输出较少日志：</p>
+
+<pre class="prettyprint hljs-dark"><code class="hljs nginx"><span class="hljs-title">listen</span>              <span class="hljs-number">1935</span>;<br><span class="hljs-title">vhost</span> __defaultVhost__ {<br>    <span class="hljs-title">transcode</span> {<br>        <span class="hljs-title">enabled</span>     <span class="hljs-built_in">on</span>;<br>        <span class="hljs-title">ffmpeg</span>      ./objs/ffmpeg/bin/ffmpeg;<br>        <span class="hljs-title">engine</span> ff {<br>            <span class="hljs-title">enabled</span>         <span class="hljs-built_in">on</span>;<br>            <span class="hljs-title">vfilter</span> {<br>                <span class="hljs-comment"># -v quiet</span><br>                <span class="hljs-title">v</span>           quiet;<br>            }<br>            <span class="hljs-title">vcodec</span>          libx264;<br>            <span class="hljs-title">vbitrate</span>        <span class="hljs-number">500</span>;<br>            <span class="hljs-title">vfps</span>            <span class="hljs-number">25</span>;<br>            <span class="hljs-title">vwidth</span>          <span class="hljs-number">768</span>;<br>            <span class="hljs-title">vheight</span>         <span class="hljs-number">320</span>;<br>            <span class="hljs-title">vthreads</span>        <span class="hljs-number">12</span>;<br>            <span class="hljs-title">vprofile</span>        main;<br>            <span class="hljs-title">vpreset</span>         medium;<br>            <span class="hljs-title">vparams</span> {<br>            }<br>            <span class="hljs-title">acodec</span>          libaacplus;<br>            <span class="hljs-title">abitrate</span>        <span class="hljs-number">70</span>;<br>            <span class="hljs-title">asample_rate</span>    <span class="hljs-number">44100</span>;<br>            <span class="hljs-title">achannels</span>       <span class="hljs-number">2</span>;<br>            <span class="hljs-title">aparams</span> {<br>            }<br>            <span class="hljs-title">output</span>          <span class="hljs-url">rtmp://127.0.0.1:[port]/[app]?vhost=[vhost]/[stream]_[engine]</span>;<br>        }<br>    }<br>}<br></code></pre>
+
+<p>对ffmpeg添加-v quiet参数即可。</p>
+
+
+
+<h3 id="copy-without-transcode">Copy Without Transcode</h3>
+
+<p>可以配置vcodec/acodec copy，实现不转码。譬如，视频为h264编码，但是音频是mp3/speex，需要转码音频为aac，然后切片为HLS输出。</p>
+
+<pre class="prettyprint hljs-dark"><code class="hljs nginx"><span class="hljs-title">listen</span>              <span class="hljs-number">1935</span>;<br><span class="hljs-title">vhost</span> __defaultVhost__ {<br>    <span class="hljs-title">transcode</span> {<br>        <span class="hljs-title">enabled</span>     <span class="hljs-built_in">on</span>;<br>        <span class="hljs-title">ffmpeg</span>      ./objs/ffmpeg/bin/ffmpeg;<br>        <span class="hljs-title">engine</span> ff {<br>            <span class="hljs-title">enabled</span>         <span class="hljs-built_in">on</span>;<br>            <span class="hljs-title">vcodec</span>          copy;<br>            <span class="hljs-title">acodec</span>          libaacplus;<br>            <span class="hljs-title">abitrate</span>        <span class="hljs-number">70</span>;<br>            <span class="hljs-title">asample_rate</span>    <span class="hljs-number">44100</span>;<br>            <span class="hljs-title">achannels</span>       <span class="hljs-number">2</span>;<br>            <span class="hljs-title">aparams</span> {<br>            }<br>            <span class="hljs-title">output</span>          <span class="hljs-url">rtmp://127.0.0.1:[port]/[app]?vhost=[vhost]/[stream]_[engine]</span>;<br>        }<br>    }<br>}<br></code></pre>
+
+<p>或者拷贝视频和音频：</p>
+
+<pre class="prettyprint hljs-dark"><code class="hljs nginx"><span class="hljs-title">listen</span>              <span class="hljs-number">1935</span>;<br><span class="hljs-title">vhost</span> __defaultVhost__ {<br>    <span class="hljs-title">transcode</span> {<br>        <span class="hljs-title">enabled</span>     <span class="hljs-built_in">on</span>;<br>        <span class="hljs-title">ffmpeg</span>      ./objs/ffmpeg/bin/ffmpeg;<br>        <span class="hljs-title">engine</span> ff {<br>            <span class="hljs-title">enabled</span>         <span class="hljs-built_in">on</span>;<br>            <span class="hljs-title">vcodec</span>          copy;<br>            <span class="hljs-title">acodec</span>          copy;<br>            <span class="hljs-title">output</span>          <span class="hljs-url">rtmp://127.0.0.1:[port]/[app]?vhost=[vhost]/[stream]_[engine]</span>;<br>        }<br>    }<br>}<br></code></pre>
+
+
+
+<h3 id="drop-video-or-audio">Drop Video or Audio</h3>
+
+<p>可以禁用视频或者音频，只输出音频或视频。譬如，电台可以丢弃视频，对音频转码为aac后输出HLS。 <br>
+可以配置vcodec为vn，acodec为an实现禁用。例如：</p>
+
+<pre class="prettyprint hljs-dark"><code class="hljs nginx"><span class="hljs-title">listen</span>              <span class="hljs-number">1935</span>;<br><span class="hljs-title">vhost</span> __defaultVhost__ {<br>    <span class="hljs-title">transcode</span> {<br>        <span class="hljs-title">enabled</span>     <span class="hljs-built_in">on</span>;<br>        <span class="hljs-title">ffmpeg</span>      ./objs/ffmpeg/bin/ffmpeg;<br>        <span class="hljs-title">engine</span> vn {<br>            <span class="hljs-title">enabled</span>         <span class="hljs-built_in">on</span>;<br>            <span class="hljs-title">vcodec</span>          vn;<br>            <span class="hljs-title">acodec</span>          libaacplus;<br>            <span class="hljs-title">abitrate</span>        <span class="hljs-number">45</span>;<br>            <span class="hljs-title">asample_rate</span>    <span class="hljs-number">44100</span>;<br>            <span class="hljs-title">achannels</span>       <span class="hljs-number">2</span>;<br>            <span class="hljs-title">aparams</span> {<br>            }<br>            <span class="hljs-title">output</span>          <span class="hljs-url">rtmp://127.0.0.1:[port]/[app]?vhost=[vhost]/[stream]_[engine]</span>;<br>        }<br>    }<br>}<br></code></pre>
+
+<p>该配置只输出纯音频，编码为aac。</p>
+
+
+
+<h3 id="other-transcode-config">Other Transcode Config</h3>
+
+<p>conf/full.conf中有很多FFMPEG转码配置的实例，也可以参考ffmpeg的命令行。</p>
+
+<ul><li>mirror.transcode.srs.com 将视频流上半截，翻转到下半截，看起来像个镜子。</li>
+<li>drawtext.transcode.srs.com 加文字水印。</li>
+<li>crop.transcode.srs.com 剪裁视频。</li>
+<li>logo.transcode.srs.com 添加图片logo。</li>
+<li>audio.transcode.srs.com 只对音频转码。</li>
+<li>copy.transcode.srs.com 不转码只转封装，类似于SRS的Forward。</li>
+<li>all.transcode.srs.com 转码参数的详细说明。</li>
+<li>ffempty.transcode.srs.com 一个ffmpeg的mock，不转码只打印参数。</li>
+<li>app.transcode.srs.com 对指定的app的流转码。</li>
+<li>stream.transcode.srs.com 对指定的流转码。</li>
+<li>vn.transcode.srs.com 只输出音频，禁止视频输出。</li>
+</ul>
+
+
+
+<h3 id="transcode-on-arm-cpu">Transcode on ARM cpu</h3>
+
+<p>SRS可以在ARM下调用系统的ffmpeg转码，参考：<a href="https://github.com/ossrs/srs/wiki/v1_CN_ARMTranscode" target="_blank">Raspberry pi 转码</a></p>
+
+<p>注意：使用自己的工具时，需要禁用ffmpeg，但是打开transcode选项：–with-transcode –without-ffmpeg，这样就不会编译ffmpeg，但是编译了直播转码功能。参考：<a href="https://github.com/ossrs/srs/wiki/v1_CN_Build" target="_blank">Build</a></p>
+
+
+
+<h3 id="ffmpeg-transcode-the-stream-by-flash-encoder">FFMPEG Transcode the Stream by Flash encoder</h3>
+
+<p>flash可以当作编码器推流，参考演示中的编码器或者视频会议。flash只支持speex/nellymoser/pcma/pcmu，但flash会有一个特性，没有声音时就没有音频包。FFMPEG会依赖于这些音频包，如果没有会认为没有音频。</p>
+
+<p>所以FFMPEG用来转码flash推上来的RTMP流时，可能会有一个问题：ffmpeg认为没有音频。</p>
+
+<p>另外，FFMPEG取flash的流的时间会很长，也可能是在等待这些音频包。</p>
+
+
+
+<h3 id="ffmpeg">FFMPEG</h3>
+
+<p>FFMPEG相关链接</p>
+
+<ul><li><a href="http://ffmpeg.org/" target="_blank">ffmpeg.org</a></li>
+<li><a href="http://ffmpeg.org/ffmpeg.html" target="_blank">ffmpeg命令行</a></li>
+<li><a href="http://ffmpeg.org/ffmpeg-filters.html" target="_blank">ffmpeg滤镜</a></li>
+<li><a href="http://ffmpeg.org/ffmpeg-codecs.html" target="_blank">ffmpeg编解码参数</a></li>
+</ul></div></body></html>

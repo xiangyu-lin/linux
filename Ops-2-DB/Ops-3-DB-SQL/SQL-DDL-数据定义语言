@@ -1,0 +1,139 @@
+数据库：
+  CREATE,ALTER,DROP
+    {DATABASE|SCHEMA}
+    [IF EXISTS]
+    [IF NOT EXISTS]
+
+		CREATE {DATABASE |SCHEMA} [IF NOT EXISTS] db_name [DEFAULT] [CHARACTER SET=''] [DEFAULT] [COLLATE='']
+		DROP {DATABASE |SCHEMA} [IF EXISTS] db_name;
+		ALTER {DATABASE |SCHEMA} db_name [DEFAULT] [CHARACTER SET=''] [DEFAULT] [COLLATE='']
+
+		SHOW CHARACTER SET; 查看支持所有字符集
+		SHOW COLLATIONS; 查看支持所有排序规则
+
+		获取命令使用帮助：
+			mysql> HELP KEYWORD;
+
+		查看：
+			mysql> SHOW DATABASES;
+
+		MariaDB [(none)]> CREATE DATABASE x;
+		MariaDB [(none)]> SHOW DATABASES;
+		MariaDB [(none)]> DROP DATABASE x;
+		MariaDB [(none)]> use x;
+
+
+表：二维关系
+  设计表：遵循规范；
+  定义：字段，索引
+      字段的定义：字段名、类型和类型修饰符
+      键、约束或索引：应该创建在经常用作查询条件的字段上
+          索引：实现级别在存储引擎；
+              分类：
+                  稠密索引、稀疏索引
+                  B+索引、hash索引、R数索引、FULLTEXT索引
+                  聚集索引、非聚集索引
+                  简单索引、组合索引
+
+
+
+	创建表：CREATE TABLE
+	    1. 直接创建
+	    2. 通过查询现存的表创建：新表会被直接插入查询而来的数据
+	    3. 通过复制现存的表的表结构创建：不复制数据
+
+			表创建：第一种方式
+				CREATE [TEMPORARY] TABLE [IF NOT EXISTS] tbl_name
+			    (create_definition,...)
+			    [table_options]
+
+			    [table_options]
+			    	ENGINE [=] engine_name
+			    		mysql> SHOW ENGINES;
+			    	AUTO_INCREMENT [=] value
+			    	[DEFAULT] CHARACTER SET [=] charset_name
+			    	[DEFAULT] COLLATE [=] collation_name
+			    	COMMENT [=] 'string'
+			    	DELAY_KEY_WRITE [=] {0 | 1}
+			    	ROW_FORMAT [=] {DEFAULT|DYNAMIC|FIXED|COMPRESSED|REDUNDANT|COMPACT}
+			    	TABLESPACE tablespace_name [STORAGE {DISK|MEMORY|DEFAULT}]
+
+
+						CREATE TABLE [IF NOT EXISTS] tbl_name (col1 type1, col2 type2, ...)
+						CREATE TABLE [IF NOT EXISTS] tb_name (col1 datatype 修饰符, col2 datatype 修饰符) ENGINE='')
+							col type1
+							PRIMARY KEY(col1,...)
+							INDEX(col1, ...) #给字段添加索引
+							UNIQUE KEY(col1, ...)
+
+						MariaDB [x]> CREATE TABLE tbl2 (id int UNSIGNED NOT NULL,name VARCHAR(20) NOT NULL,age tinyint UNSIGNED,PRIMARY KEY(id,name));
+
+
+	  		表创建：第二种方式（复制表数据）
+	  			CREATE [TEMPORARY] TABLE [IF NOT EXISTS] tbl_name
+	  			    [(create_definition,...)]
+	  			    [table_options]
+	  			    select_statement
+
+					MariaDB [x]> CREATE TABLE tbl SELECT * FROM x.stu;
+
+	  		表创建：第三种方式（复制表结构）
+	  			CREATE [TEMPORARY] TABLE [IF NOT EXISTS] tbl_name
+	      		{ LIKE old_tbl_name | (LIKE old_tbl_name) }
+
+	      注意 Storage Engine 是指表类型，也即在表创建是指明其使用的存储引擎;
+	          同一个库中表要使用同一种存储引擎类型；
+
+
+		表选项：
+			ENGINE [=] engine_name
+			ROW_FORMAT [=] {DEFAULT|DYNAMIC|FIXED|COMPRESSED|REDUNDANT|COMPACT}\
+			查看所有的引擎：SHOW ENGINES;
+
+		查看表：SHOW TABLES [FROM db_name]
+		查看表结构：DESC [db_name.]tb_name;    #DESCRIBE tbl_name;
+
+		删除表： 不可逆
+		DROP TABLE [IF EXISTS] tb_name；
+
+		获取帮助：
+			mysql> HELP CREATE TABLE;
+
+		查看创建命令：
+			SHOW CREATE TABLE tbl_name;
+
+		查看表状态：
+			SHOW TABLE STATUS LIKE 'tbl_name'\G
+
+
+
+		ALTER TABLE 'tbl_name' #修改表
+			字段：
+				添加字段：add
+					ADD col1 data_type [FIRST|AFTER col_name] #FIRST 放在第一 #AFTER 放到之后
+						ALTER TABLE students ADD gender ENUM('m','f'); 直接回车放到最后
+				删除字段：drop
+				修改字段：alter, change, modify
+						ALTER TABLE students CHANGE id sid int UNSIGNED NOT NULL; #类型要再写一次 和之前一样
+
+						ALTER TABLE students ADD UNIQUE KEY(name);
+---
+
+			索引:
+				添加索引：add  #ALTER TABLE students ADD INDEX(age);
+				删除索引: drop #SHOW INDEX FROM students;
+			表选项
+				修改:
+
+			查看表上的索引：SHOW INDEXES FROM [db_name.]tbl_name;
+
+			索引： #只有添加和删除 没有修改
+				索引是特殊数据结构；定义在查找时作为查找条件的字段；
+
+			索引：要有索引名称；
+
+			创建索引：
+				CREATE INDEX index_name ON tbl_name (index_col_name,...);
+
+			删除索引：
+				DROP INDEX index_name ON tbl_name;

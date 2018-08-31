@@ -1,0 +1,163 @@
+# Find
+
+find - 实时查找工具，通过遍历指定路径下的文件系统完成文件查找。
+
+工作特点
+- 查找速度略慢
+- 精确查找
+- 实时查找
+
+语法
+
+	find [OPTION]... [查找路径] [查找条件] [处理动作]
+
+- 查找路径：指定具体目标路径；默认为当前目录；
+- 查找条件：指定的查找标准，可以文件名、大小、类型、权限等标准进行；\
+  默认为找出指定路径下的所有文件；
+- 处理动作：对符合条件的文件做什么操作；默认输出至屏幕；
+
+---
+
+### 查找条件
+
+根据文件名查找
+
+	-name "文件名称"：支持使用glob *, ?, [], [^]
+	-iname "文件名称"：不区分字母大小写
+	-regex "PATTERN"：以PATTERN匹配整个文件路径字符串，而不仅仅是文件名称；
+
+根据属主、属组查找
+
+	-user USERNAME：查找属主为指定用户的文件；
+	-group GRPNAME: 查找属组为指定组的文件；
+
+	-uid UserID：查找属主为指定的UID号的文件；
+	-gid GroupID：查找属组为指定的GID号的文件；
+
+	-nouser：查找没有属主的文件；
+	-nogroup：查找没有属组的文件；
+
+根据文件类型查找
+
+	-type TYPE:
+
+	f: 普通文件
+	d: 目录文件
+	l: 符号链接文件
+	s：套接字文件
+	b: 块设备文件
+	c: 字符设备文件
+	p: 管道文件
+
+组合条件
+
+	与：-a
+	或：-o
+	非：-not, !
+
+	!A -a !B = !(A -o B)
+	!A -o !B = !(A -a B)
+
+根据文件大小来查找
+
+	-size [+|-]#UNIT
+		常用单位：k, M, G
+
+		#UNIT: (#-1, #]
+		-#UNIT：[0,#-1]
+		+#UNIT：(#,oo)
+
+根据时间戳
+
+- 以天为单位；
+
+		-atime [+|-]#,
+		#: [#,#+1)
+		+#: [#+1,oo]
+		-#: [0,#)
+		-mtime
+		-ctime
+
+- 以分钟为单位：
+		-amin
+		-mmin
+		-cmin
+
+根据权限查找
+
+	-perm [/|-]MODE
+		MODE: 精确权限匹配
+		/MODE：任何一类(u,g,o)对象的权限中只要能一位匹配即可；
+		-MODE：每一类对象都必须同时拥有为其指定的权限标准；
+
+### 处理动作
+
+- -print：默认的处理动作，显示至屏幕；
+
+- -ls：类似于对查找到的文件执行“ls -l”命令；
+- -delete：删除查找到的文件；
+
+- -fls /path/to/somefile：查找到的所有文件的长格式信息保存至指定文件中；
+
+- -ok COMMAND {} \; 对查找到的每个文件执行由COMMAND指定的命令；对于每个文件执行命令之前，都会交互式要求用户确认；
+
+- -exec COMMAND {} \; 对查找到的每个文件执行由COMMAND指定的命令; {}: 用于引用查找到的文件名称自身；
+
+注意：find传递查找到的文件至后面指定的命令时，查找到所有符合条件的文件一次性传递给后面的命令；
+有些命令不能接受过多参数，此时命令执行可能会失败；另一种方式可规避此问题：find | xargs COMMAND
+
+---
+
+练习：
+
+	1、查找/var目录下属主为root，且属组为mail的所有文件或目录；
+		# find /var -user root -group mail
+
+	2、查找/usr目录下不属于root、bin或hadoop的所有文件或目录；
+		# find /usr -not -user root -a -not -user bin -a -not -user hadoop
+		# find /usr -not \( -user root -o -user bin -o -user hadoop \)
+
+	3、查找/etc目录下最周一周内其内容修改过，同时属主不为root，也不是hadoop的文件或目录；
+		# find /etc -mtime -7 -a -not -user root -a -not -user hadoop
+		# find /etc/ -mtime -7 -a -not \( -user root -o -user hadoop \)
+
+	4、查找当前系统上没有属主或属组，且最近一个周内曾被访问过的文件或目录；
+		# find / -nouser -a -nogroup -a -atime -7
+
+	5、查找/etc目录下大于1M且类型为普通文件的所有文件；
+		# find /etc -size +1M -type f
+
+	6、查找/etc目录下所有用户都没有写权限的文件；
+		# find /etc -not -perm /222
+
+	7、查找/etc目录下至少有一类用户没有执行权限的文件；
+		# find /etc -not -perm -111
+
+	8、查找/etc/init.d目录下，所有用户都有执行权限，且其它用户有写权限的文件；
+		# find /etc/init.d -perm -113
+
+	9、找出/tmp目录下，属主不是root，且文件名不是fstab的文件；
+
+	find /tmp \( -not -user root -a -not -name 'fstab' \) -ls
+	find /tmp -not \( -user root -o -name 'fstab' \) -ls
+
+---
+附
+
+文件查找：locate, find
+
+- 非实时查找(数据库查找)：locate
+- 实时查找：find
+
+locate：
+
+- 依赖于事先构建的索引；索引的构建是在系统较为空闲时自动进行(周期性任务)；手动更新数据库(updatedb)；
+
+- 索引构建过程需要遍历整个根文件系统，极消耗资源；
+
+- 工作特点:
+	- 查找速度快；
+	- 模糊查找；
+	- 非实时查找；
+
+locate KEYWORD

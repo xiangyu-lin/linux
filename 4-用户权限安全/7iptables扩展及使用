@@ -1,0 +1,132 @@
+iptables：
+
+	显式扩展：必须显式指明使用的扩展模块(rpm -ql iptables | grep "\.so")
+
+		CentOS 6: man iptables
+		CentOS 7: man iptables-extensions
+
+	1、multiport扩展
+		以离散方式定义多端口匹配；最多指定15个端口；
+
+		[!] --source-ports,--sports port[,port|,port:port]...：指明多个源端口；
+		[!] --destination-ports,--dports port[,port|,port:port]...：指明多个离散的目标端口；
+		[!] --ports port[,port|,port:port]... 源端口和目标端口都匹配
+
+		~]# iptables -I INPUT -s 172.16.0.0/16 -d 172.16.100.9 -p tcp -m multiport --dports 22,80 -j ACCEPT
+		~]# iptables -I OUTPUT -d 172.16.0.0/16 -s 172.16.100.9 -p tcp -m multiport --sports 22,80 -j ACCEPT
+
+	2、iprange扩展
+		指明连续的（但一般是不能扩展为整个网络）ip地址范围时使用；
+
+		[!] --src-range from[-to]：指明连续的源IP地址范围；
+		[!] --dst-range from[-to]：指明连续的目标IP地址范围；
+
+		~~]# iptables -I INPUT -d 172.16.100.9 -p tcp -m multiport --dports 22:23,80 -m iprange --src-range 172.16.100.1-172.16.100.120 -j ACCEPT
+		~]# iptables -I OUTPUT -s 172.16.100.9 -p tcp -m multiport --sports 22:23,80 -m iprange --dst-range 172.16.100.1-172.16.100.120 -j ACCEPT
+
+	3、string扩展
+		检查报文中出现的字符串；
+
+		--algo {bm|kmp}
+			bm = Boyer-Moore
+			kmp = Knuth-Pratt-Morris
+		[!] --string pattern
+
+		~]# iptables -I OUTPUT -m string --algo bm --string 'movie' -j REJECT
+
+	4、time扩展
+		根据报文到达的时间与指定的时间范围进行匹配；
+
+		--datestart
+		--datestop
+
+		--timestart
+		--timestop
+
+		--monthdays
+		--weekdays
+
+	5、connlimit扩展
+		根据每客户端IP（也可以是地址块）做并发连接数数量匹配；
+
+		--connlimit-above n：连接的数量大于n
+		--connlimit-upto n: 连接的数量小于等于n
+
+	6、limit扩展
+		基于收发报文的速率做检查；
+
+		令牌桶过滤器
+
+		--limit rate[/second|/minute|/hour|/day]
+		--limit-burst number
+
+	7、state扩展
+		根据连接追踪机制检查连接的状态；
+
+		调整连接追踪功能所能够容纳的最大连接数量：
+			/proc/sys/net/nf_conntrack_max
+
+		已经追踪到并记录下的连接：
+			/proc/net/nf_conntrack
+
+		不同协议或连接类型追的时长：
+			/proc/sys/net/netfilter/
+
+		可追踪的连接状态：
+			NEW：新发出的请求；连接追踪模板中不存此连接相关的信息条目，因此，将其识别为第一次发出的请求；
+			ESTABLISHED：NEW状态之后，连接追踪模板中为其建立的条目失效之前期间内所进行的通信的状态；
+			RELATED：相关的连接；如ftp协议的命令连接与数据连接之间的关系；
+			INVALIED：无法识别的连接；
+
+		--state STATE1,STATE2,...
+
+		问题：如何开放被动模式的ftp服务？
+
+			(1) 装载ftp追踪时的专用的模块:
+				# modprobe nf_conntrack_ftp
+
+			(2) 放行请求报文：
+				命令连接：NEW, ESTABLISHED
+				数据连接：RELATED, ESTABLISHED
+
+				# iptables -A INPUT -d LocalIP -p tcp --dport 21 -m state --state NEW,ESTABLISHED -j ACCEPT
+				# iptables -A INPUT -d LocalIP -p tcp -m state --state RELATED,ESTABLISHED -j ACCEPT
+
+			(3) 放行响应报文：
+				ESTABLISEHD
+
+				# iptables -A OUTPUT -s LocalIP -p tcp -m state --state ESTABLISHED -j ACCEPT
+
+	如何保存及重载规则：
+
+		保存规则至指定文件：
+			iptables-save > /PATH/TO/SOMEFILE
+
+		从指定文件重载规则：
+			iptables-restore < /PATH/FROM/SOMEFILE
+
+		CentOS 6:
+			service iptables save
+				iptables-save > /etc/sysconfig/iptables
+
+			service iptables restart
+				iptables-restore < /etc/sysconfig/iptables
+
+		CentOS 7:
+			引入了新的iptables前端管理服务工具：firewalld
+				firewalld-cmd
+				firewalld-config
+
+		关于firewalld：
+			http://www.ibm.com/developerworks/cn/linux/1507_caojh/index.html
+
+	练习：
+		主机防火墙：
+			放行telnet, ftp, web服务；
+			放行samba服务；
+			放行dns服务(查询和区域传送)；
+
+		网络防火墙：
+			放行telnet, ftp, web服务；
+			放行samba服务；
+			放行dns服务(查询和区域传送)；

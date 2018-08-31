@@ -1,0 +1,509 @@
+http-2.2 CentOS 6
+
+程序环境
+
+	配置文件：
+		/etc/httpd/conf/httpd.conf
+		/etc/httpd/conf.d/*.conf
+	主程序文件：
+		/usr/sbin/httpd
+		/usr/sbin/httpd.event
+		/usr/sbin/httpd.worker
+  服务脚本：
+		/etc/rc.d/init.d/httpd
+		配置文件：/etc/sysconfig/httpd
+	日志文件目录：
+		/var/log/httpd
+			access_log: 访问日志
+			error_log：错误日志
+	站点文档目录：
+		/var/www/html
+	模块文件路径：
+		/usr/lib64/httpd/modules
+
+
+	配置文件的组成：
+		 ~]# grep "Section" /etc/httpd/conf/httpd.conf
+		### Section 1: Global Environment
+		### Section 2: 'Main' server configuration
+		### Section 3: Virtual Hosts
+
+		配置格式：directive value
+			directive: 不区分字符大小写；
+			value: 为路径时，取决于文件系统；
+
+常用配置：
+	1、修改监听的IP和Port
+		Listen [IP:]PORT
+
+		省略ip表示监听本机所有IP; Listen可重复出现多次；
+
+	2、持久连接
+		Persistent Connection：连接建立，每个资源获取完成后不会断开连接，而是继续等待其它的请求完成；
+			如何断开？
+				数量限制：100
+				时间限制：可配置
+			副作用：对并发访问量较大的服务器，持久连接功能会使用有些请求得不到响应；
+			折衷：使用较短的持久连接时间；
+				httpd-2.4 支持毫秒级持久时间；
+		非持久连接
+
+		KeepAlive On|Off
+		MaxKeepAliveRequests #
+		KeepAliveTimeout #
+
+		测试：
+			telnet HOST PORT
+			GET /URL HTTP/1.1
+			Host: HOSTNAME or IP
+
+	3、MPM
+		Multipath Process Module：多道处理模块
+			prefork, worker, event
+
+		httpd-2.2不支持同时编译多个模块，所以只能编译时选定一个；rpm安装的包提供三个二进制程序文件，分别用于实现对不同MPM机制的支持；确认方法：
+			# ps aux  | grep httpd
+
+		默认为/usr/sbin/httpd, 其使用prefork
+			查看模块列表：
+				查看静态编译的模块
+					# httpd -l
+					Compiled in modules:
+					  core.c
+					  prefork.c
+					  http_core.c
+					  mod_so.c
+				查看静态编译及动态装载的模块
+					# httpd -M
+
+		更换使用的httpd程序：
+			/etc/sysconfig/httpd
+        #HTTPD=/usr/sbin/httpd.worker
+        #HTTPD=/usr/sbin/httpd.event
+				HTTPD=
+
+			重启服务生效；
+
+		prefork的配置：
+			<IfModule prefork.c>
+			StartServers       8       #服务启动时启动多少个进程
+			MinSpareServers    5       #最小空闲进程数
+			MaxSpareServers   20       #最大空闲进程数
+			ServerLimit      256       #服务器周期内允许启动的服务器数量
+			MaxClients       256       #服务器端最多允许同时请求的客户端数
+			MaxRequestsPerChild  4000
+			</IfModule>
+
+		worker的配置：
+			<IfModule worker.c>
+			StartServers         4     #服务启动时启动多少个进程
+			MaxClients         300     #服务器端最多允许同时请求的客户端数(线程数)
+			MinSpareThreads     25     #
+			MaxSpareThreads     75
+			ThreadsPerChild     25     #每个进程所能够启动的线程数
+			MaxRequestsPerChild  0     #每个线程能处理的最大请求数量 0表示不限制
+			</IfModule>
+
+          # 4*25>75 kill 一个  所以三个
+
+		PV, UV
+			PV: Page View
+			UV: User View
+				独立IP量；
+
+			300*86400=40W+
+
+	4、DSO #动态共享对象
+		配置指令实现模块加载
+			LoadModule <mod_name> <mod_path>
+
+			模块路径可使用相对地址
+				相对于ServerRoot(/etc/httpd)指向的路径而言；
+					/etc/httpd/modules/
+
+	5、定义'Main' server的文档页面路径
+		DocumentRoot
+
+		文档路径映射：
+			DocumentRoot指向的路径为URL路径的起始位置；
+				DocumentRoot "/var/www/html"
+					test/index.html --> http://HOST:PORT/test/index.html
+
+	6、站点访问控制
+		可基于两种类型的路径指明对哪些资源进行访问控制
+			文件系统路径：
+				<Directory ""> </Direcotry> #对路径控制
+				<File ""> </File>           #对文件
+				<FileMatch ""> </FileMatch> #可以正则匹配  #尽量别用 相对效率低
+			URL路径：
+				<Location ""> </Location>
+				...
+
+		访问控制机制：
+			基于来源地址；
+			基于账号；
+
+	7、Directory中“基于来源地址”实现访问控制 #和httpd2.4有所不同
+
+		(1) Options
+			所有可用特性：Indexes Includes FollowSymLinks SymLinksifOwnerMatch ExecCGI MultiViews
+						  None, All
+				Indexes: 索引；  !默认页面 不能同时没有索引和删除欢迎页
+				FollowSymlinks：允许跟踪符号链接文件；#网站目录下连接到其他的位置
+
+            #SymLinksifOwnerMatch #属主匹配时允许
+            #ExecCGI 执行CGI脚本
+            #MultiViews 内容协商机制 （多视图） #性能差 有风险
+
+      AllowOverride None #覆盖后面单个路径的访问控制  不开 忽略
+
+		(2) 基于来源地址的访问控制机制
+			Order：检查次序
+				Order allow,deny #默认拒绝 做白名单
+				Order deny,allow #默认允许 做黑名单
+			Allow from
+			Deny from
+
+			来源地址： #from后面跟的
+				IP
+				NetAddr: #多种表示方法
+					172.16
+					172.16.0.0
+					172.16.0.0/16
+					172.16.0.0/255.255.0.0
+
+	8、定义默认主页面
+		DirecotryIndex index.html index.html.var
+        #多个则从左至右
+
+	9、日志设定
+
+		错误日志：
+			ErrorLog logs/error_log
+			LogLevel warn  #默认warn级别
+
+				debug, info, notice, warn, error, crit, alert, emerg
+
+
+		访问日志：
+			CustomLog logs/access_log combined  #combined最详细
+
+			LogFormat "%h %l %u %t \"%r\" %>s %b \"%{Referer}i\" \"%{User-Agent}i\"" combined
+        #自定义日志格式
+
+				%h: Remote host 客户端IP地址；
+				%l: Remote logname (from identd, if supplied). -表示为空；#indent模块登录 不重要
+				%u: Remote user,  (from auth; may be bogus if return status (%s) is 401); #认证时的用户名
+				%t：Time the request was received (standard english format)，服务器收到请求的时间；
+				%r：First line of request，请求报文的道行信息(method url version)；
+				%>s: 响应状态码；
+				%b: 响应报文的大小，单位是字节，不包括响应报文首部；
+				%{Referer}i：请求报文当中"referer"首部的值；当前资源的访问入口，即从哪个页面中的超链接跳转而来；
+				%{User-Agent}i：请求报文当中"User-Agent"首部的值；即发出请求用到的应用程序；
+
+			详情：http://httpd.apache.org/docs/2.2/mod/mod_log_config.html#formats
+        #combined IO 宏
+
+	10、路径别名
+
+		DocumentRoot "/www/htocs"
+			http://www.magedu.com/download/bash-4.4.2-3.el6.x86_64.rpm
+				--> /www/htdocs/download/bash-4.4.2-3.el6.x86_64.rpm
+
+		Alias /URL/ "/PATH/TO/SOMEDIR/"  #前后斜线要对应
+
+			Alias /bbs/ "/forum/htdocs"
+				http://www.magedu.com/bbs/index.html
+					--> /forum/htdocs/bbs/
+
+	11、设定默认字符集
+		AddDefaultCharset UTF-8
+
+		GBK, GB2312, GB18030
+
+	12、基于用户的访问控制
+
+		认证质询：
+			WWW-Authenticate：响应码为401，拒绝客户端请求，并说明要求客户提供账号和密码；
+
+		认证：
+			Authorization：客户端用户填入账号和密码后再次发送请求报文；认证通过，则服务器发送响应的资源；
+
+			认证类型：
+				basic：明文
+				digest：消息摘要
+
+		安全域：需要用户认证后方能访问的路径；
+			应该通过名称对其进行标识，并用于告知用户认证的原因；
+
+		用户的账号和密码存储于何处？
+			虚拟账号：仅用于访问某服务时用到的认证标识；
+
+			存储：
+				文本文件
+				SQL数据库
+				ldap
+				nis
+
+		basic认证：
+			(1) 定义安全域
+				<Directory "">
+					Options None
+					AllowOverride None
+					AuthType Basic
+					AuthName "STRING"
+					AuthUserFile "/PATH/TO/HTTPD_USER_PASSWD_FILE"
+					Require user username1 username2 ...
+				</Directory>
+
+					允许账号文件中的所有用户登录访问：
+						Require valid-user
+
+			(2) 提供账号和密码存储(文本文件)
+				使用htpasswd命令进行管理
+					htpasswd [options] passwordfile username
+						-c: 自动创建passwordfile，因此，仅应该在添加第一个用户时使用；
+						-m: md5加密用户密码；
+						-s: sha1加密用户密码；
+						-D: 删除指定用户
+
+			(3) 实现基于组进行认证
+				<Directory "">
+					Options None
+					AllowOverride None
+					AuthType Basic
+					AuthName "STRING"
+					AuthUserFile "/PATH/TO/HTTPD_USER_PASSWD_FILE"
+					AuthGroupFile "/PATH/TO/HTTPD_GROUP_FILE"
+					Require group GROUP1 GROUP2 ...
+				</Directory>
+
+				要提供：用户账号文件和组文件；
+
+					组文件：每一行定义一个组
+						GRP_NAME：user1 user2 user3 ...
+
+
+				示例：
+					<Directory "/www/htdocs/admin">
+					    Options None
+					    AllowOverride None
+					    AuthType Basic
+					    AuthName "Administator private"
+					    AuthUserFile "/etc/httpd/conf.d/.htpasswd"
+					    AuthGroupFile "/etc/httpd/conf.d/.htgroup"
+					    Require group webadmin
+					</Directory>
+
+	13、虚拟主机
+
+		#NameVirtualHost *:80 #注释要去掉
+
+		有三种实现方案：
+			基于ip：
+				为每个虚拟主机准备至少一个ip地址；
+			基于port：
+				为每个虚拟主机准备至少一个专用port；实践中很少使用；
+			基于hostname：
+				为每个虚拟主机准备至少一个专用hostname；
+
+			可混合使用上述三种方式中任意方式；
+
+		注意：一般虚拟主机莫与中心主机混用，所以，要使用虚拟主机，先禁用中心主机；
+			禁用中心主机：注释DocumentRoot
+
+		每个虚拟主机都有专用配置：
+			<VirtualHost "IP:PORT">
+				SeverName
+				DocumentRoot ""
+			</VirtualHost>
+
+				ServerAlias: 虚拟主机的别名；
+				ErrorLog
+				CustomLog
+				<Directory "">
+				</Directory>
+
+		示例1：基于ip
+			<VirtualHost 172.16.100.6:80>
+			    ServerName web1.magedu.com
+			    DocumentRoot "/vhosts/web1/htdocs"
+			</VirtualHost>
+
+			<VirtualHost 172.16.100.7:80>
+			    ServerName web2.magedu.com
+			    DocumentRoot "/vhosts/web2/htdocs"
+			</VirtualHost>
+
+		示例2：基于port
+			<VirtualHost 172.16.100.7:80>
+			    ServerName web2.magedu.com
+			    DocumentRoot "/vhosts/web2/htdocs"
+			</VirtualHost>
+
+			<VirtualHost 172.16.100.7:8080>
+			    ServerName web3.magedu.com
+			    DocumentRoot "/vhosts/web3/htdocs"
+			</VirtualHost>
+
+		示例3：基于hostname
+			<VirtualHost 172.16.100.6:80>
+			    ServerName web1.magedu.com
+			    DocumentRoot "/vhosts/web1/htdocs"
+			</VirtualHost>
+
+			<VirtualHost 172.16.100.6:80>
+			    ServerName web2.magedu.com
+			    DocumentRoot "/vhosts/web2/htdocs"
+			</VirtualHost>
+
+			<VirtualHost 172.16.100.6:80>
+			    ServerName web3.magedu.com
+			    DocumentRoot "/vhosts/web3/htdocs"
+			</VirtualHost>
+
+	14、内置的status页面
+		<Location /server-status>
+		    SetHandler server-status
+		    Order deny,allow
+		    Deny from all
+		    Allow from 172.16
+		</Location>
+
+		实现：基于账号实现访问控制
+          #ExtendedStatus On  #扩展状态信息
+
+  15、 curl命令
+
+  	curl是基于URL语法在命令行方式下工作的文件传输工具，它支持FTP, FTPS, HTTP, HTTPS, GOPHER, TELNET, DICT, FILE及LDAP等协议。curl支持HTTPS认证，并且支持HTTP的POST、PUT等方法， FTP上传， kerberos认证，HTTP上传，代理服务器， cookies， 用户名/密码认证， 下载文件断点续传，上载文件断点续传, http代理服务器管道（ proxy tunneling）， 甚至它还支持IPv6， socks5代理服务器,，通过http代理服务器上传文件到FTP服务器等等，功能十分强大。
+
+  	curl [options] [URL...]
+
+  	curl的常用选项：
+
+  	    -A/--user-agent <string> 设置用户代理发送给服务器
+  	    -basic 使用HTTP基本认证
+  	    --tcp-nodelay 使用TCP_NODELAY选项
+  	    -e/--referer <URL> 来源网址
+  	    --cacert <file> CA证书 (SSL)
+  	    --compressed 要求返回是压缩的格式
+  	    -H/--header <line>自定义首部信息传递给服务器
+  	    -I/--head 只显示响应报文首部信息
+  	    --limit-rate <rate> 设置传输速度
+  	    -u/--user <user[:password]>设置服务器的用户和密码
+  	    -0/--http1.0 使用HTTP 1.0
+
+  	用法：curl [options] [URL...]
+
+  	另一个工具：elinks
+  		elinks [OPTION]... [URL]...
+  			-dump: 不进入交互式模式，而直接将URL的内容输出至标准输出；
+
+  16 使用mod_deflate模块压缩页面优化传输速度
+
+  	适用场景：
+  		(1) 节约带宽，额外消耗CPU；同时，可能有些较老浏览器不支持；
+  		(2) 压缩适于压缩的资源，例如文本文件；
+
+
+  	SetOutputFilter DEFLATE
+
+  	# mod_deflate configuration
+
+
+  	# Restrict compression to these MIME types
+  	AddOutputFilterByType DEFLATE text/plain
+  	AddOutputFilterByType DEFLATE text/html
+  	AddOutputFilterByType DEFLATE application/xhtml+xml
+  	AddOutputFilterByType DEFLATE text/xml
+  	AddOutputFilterByType DEFLATE application/xml
+  	AddOutputFilterByType DEFLATE application/x-javascript
+  	AddOutputFilterByType DEFLATE text/javascript
+  	AddOutputFilterByType DEFLATE text/css
+
+  	# Level of compression (Highest 9 - Lowest 1)
+  	DeflateCompressionLevel 9
+
+  	# Netscape 4.x has some problems.
+  	BrowserMatch ^Mozilla/4 gzip-only-text/html
+
+  	# Netscape 4.06-4.08 have some more problems
+  	BrowserMatch ^Mozilla/4\.0[678] no-gzip
+
+  	# MSIE masquerades as Netscape, but it is fine
+  	BrowserMatch \bMSI[E] !no-gzip !gzip-only-text/html
+
+  17、https
+
+  	http over ssl = https 443/tcp
+  		ssl: v3
+  		tls: v1
+
+  		https://
+
+  	SSL会话的简化过程
+  		(1) 客户端发送可供选择的加密方式，并向服务器请求证书；
+  		(2) 服务器端发送证书以及选定的加密方式给客户端；
+  		(3) 客户端取得证书并进行证书验正：
+  			如果信任给其发证书的CA：
+  				(a) 验正证书来源的合法性；用CA的公钥解密证书上数字签名；
+  				(b) 验正证书的内容的合法性：完整性验正
+  				(c) 检查证书的有效期限；
+  				(d) 检查证书是否被吊销；
+  				(e) 证书中拥有者的名字，与访问的目标主机要一致；
+  		(4) 客户端生成临时会话密钥（对称密钥），并使用服务器端的公钥加密此数据发送给服务器，完成密钥交换；
+  		(5) 服务用此密钥加密用户请求的资源，响应给客户端；
+
+  		注意：SSL会话是基于IP地址创建；所以单IP的主机上，仅可以使用一个https虚拟主机；
+
+  	回顾几个术语：PKI，CA，CRL，X.509 (v1, v2, v3)
+
+  	配置httpd支持https：
+  		(1) 为服务器申请数字证书；
+  			测试：通过私建CA发证书
+  				(a) 创建私有CA
+  				(b) 在服务器创建证书签署请求
+  				(c) CA签证
+  		(2) 配置httpd支持使用ssl，及使用的证书；
+  			# yum -y install mod_ssl
+
+  			配置文件：/etc/httpd/conf.d/ssl.conf
+  				<VirtualHost _default_:443> #默认的443
+
+  				DocumentRoot
+  				ServerName
+  				SSLCertificateFile
+  				SSLCertificateKeyFile
+  		(3) 测试基于https访问相应的主机；
+  			# openssl s_client [-connect host:port] [-cert filename] [-CApath directory] [-CAfile filename]
+
+  18、httpd自带的工具程序
+
+  	htpasswd: basic认证基于文件实现时，用到的账号密码文件生成工具；
+  	apachectl：httpd自带的服务控制脚本，支持start, stop；
+  	apxs：由httpd-devel包提供的，扩展httpd使用第三方模块的工具；
+  	rotatelogs：日志滚动工具；
+  		access.log -->
+  		access.log, access.1.log
+  		access.log, access.1.log, access.2.log
+  	suexec：
+  		访问某些有特殊权限配置的资源时，临时切换至指定用户运行；
+
+  	ab: apache benchmark
+
+  19、http压力测试工具
+  	ab
+  	webbench
+  	http_load
+
+  	jmeter
+  	loadrunner
+
+  	tcpcopy #网易
+
+  	ab [OPTIONS] URL
+  		-n: 总的请求数
+  		-c：模拟的并发数
+  		-k: 以持久连接模式测试
+
+  	ulimit -n #: 调整当前用户所同时打开的文件数；

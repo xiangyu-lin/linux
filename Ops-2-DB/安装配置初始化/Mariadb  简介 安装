@@ -1,0 +1,183 @@
+mariadb(mysql)：
+
+		数据结构模型：层次模型、网状结构、关系模型
+
+			关系模型：
+				二维关系：row, column
+
+			数据库管理系统：DBMS
+				关系：Relational，RDBMS
+
+		补充材料：RDMBS设计范式基础概念
+
+			设计关系数据库时，遵从不同的规范要求，设计出合理的关系型数据库，这些不同的规范要求被称为不同的范式，各种范式呈递次规范，越高的范式数据库冗余越小。
+
+			目前关系数据库有六种范式：第一范式（1NF）、第二范式（2NF）、第三范式（3NF）、巴德斯科范式（BCNF）、第四范式(4NF）和第五范式（5NF，又称完美范式）。满足最低要求的范式是第一范式（1NF）。在第一范式的基础上进一步满足更多规范要求的称为第二范式（2NF），其余范式以次类推。一般说来，数据库只需满足第三范式(3NF）就行了。
+
+			(1) 第一范式（1NF）
+
+			所谓第一范式（1NF）是指在关系模型中，对域添加的一个规范要求，所有的域都应该是原子性的，即数据库表的每一列都是不可分割的原子数据项，而不能是集合，数组，记录等非原子数据项。即实体中的某个属性有多个值时，必须拆分为不同的属性。在符合第一范式（1NF）表中的每个域值只能是实体的一个属性或一个属性的一部分。简而言之，第一范式就是无重复的域。
+
+			说明：在任何一个关系数据库中，第一范式（1NF）是对关系模式的设计基本要求，一般设计中都必须满足第一范式（1NF）。不过有些关系模型中突破了1NF的限制，这种称为非1NF的关系模型。换句话说，是否必须满足1NF的最低要求，主要依赖于所使用的关系模型。
+
+			(2) 第二范式(2NF)
+
+			第二范式（2NF）是在第一范式（1NF）的基础上建立起来的，即满足第二范式（2NF）必须先满足第一范式（1NF）。第二范式（2NF）要求数据库表中的每个实例或记录必须可以被唯一地区分。选取一个能区分每个实体的属性或属性组，作为实体的唯一标识。
+
+			第二范式（2NF）要求实体的属性完全依赖于主关键字。所谓完全依赖是指不能存在仅依赖主关键字一部分的属性，如果存在，那么这个属性和主关键字的这一部分应该分离出来形成一个新的实体，新实体与原实体之间是一对多的关系。为实现区分通常需要为表加上一个列，以存储各个实例的唯一标识。简而言之，第二范式就是在第一范式的基础上属性完全依赖于主键。
+
+			(3) 第三范式（3NF）
+
+			第三范式（3NF）是第二范式（2NF）的一个子集，即满足第三范式（3NF）必须满足第二范式（2NF）。简而言之，第三范式（3NF）要求一个关系中不包含已在其它关系已包含的非主关键字信息。简而言之，第三范式就是属性不依赖于其它非主属性，也就是在满足2NF的基础上，任何非主属性不得传递依赖于主属性。
+
+		RDBMS：
+			MySQL: MySQL, MariaDB, Percona-Server
+			PostgreSQL: 简称为pgsql --> EnterpriseDB
+			Oracle：
+			MSSQL：
+
+		事务：多个操作被当作一个整体对待
+			ACID:
+				A: 原子性；
+				C：一致性；
+				I: 隔离性；
+				D：持久性；
+
+		SQL: Structure Query Language
+			结构化查询语言；
+
+			SQL解释器：
+
+			数据存储协议：应用层协议，C/S
+				S：server, 监听于套拼字，接收并处理客户端的应用请求；
+				C：Client
+					程序接口
+						CLI
+						GUI
+					应用编程接口
+						ODBC：Open DataBase Connection
+
+		基础概念：
+			约束：constraint，向数据表提供的数据要遵守的限制；
+				主键：一个或多个字段的组合，填入的数据必须能在本表中唯一标识本行；必须提供数据，即NOT NULL;
+					一个表只能存在一个
+				惟一键：一个或多个字段的组合，填入的数据必须能在本表中唯一标识本行；允许为NULL；
+					一个表可以存在多个
+				外键：一个表中的某字段可填入数据取决于另一个表的主键已有的数据；
+				检查性：
+
+			索引：将表中的一个或多个字段中的数据复制一份另存，并且此些需要按特定次序排序存储；
+
+			关系运算：
+				选择：挑选出符合条件的行（部分）；
+				投影：挑选出需要的字段；
+				连接：
+
+		数据抽象：
+			物理层：决定数据的存储格式，即RDBMS在磁盘上如何组织文件；
+			逻辑层：描述DB存储什么数据，以及数据间存在什么样的关系；
+			视图层：描述DB中的部分数据；
+
+		关系模型的分类：
+			关系模型
+			实体-关系模型
+			基于对象的关系模型
+			半结构化的关系模型
+
+MariaDB：
+
+		MariaDB的特性：
+			插件式存储引擎：存储管理器有多种实现版本，功能和特性可能均略有差别；用户可根据需要灵活选择；
+
+			存储引擎也称之为“表类型”；
+
+			(1) 更多的存储的存储引擎
+				MyISAM --> Aria,
+				InnoDB --> XtraDB
+			(2) 诸多扩展和新特性
+			(3) 提供了较多测试组件
+			(4) truly open source
+
+		安装和使用MariaDB
+			CentOS 7直接提供；
+			CentOS 6：
+				通用二进制格式安装过程
+					(1) 准备数据目录
+						以/mydata/data为例；
+					(2) 配置mariadb
+						# groupadd -r -g 306 mysql
+						# useradd -r -g 306 -u 306 mysql
+						# tar xf mariadb-VERSION.tar.xz -C /usr/local
+						# ln -sv mariadbPATH mysql
+						# cd /usr/local/mysql
+						# chown -R root:mysql ./*
+						# scripts/mysql_install_db --datadir=/mydata/data --user=mysql
+						# cp support-files/mysql.server /etc/rc.d/init.d/mysqld
+						# chkconfig --add mysqld
+					(3) 准备配置文件
+						配置格式：类ini格式，为各程序均通过单个配置文件提供配置信息；
+							[prog_name]
+						配置文件查找次序：
+							/etc/my.cnf --> /etc/mysql/my.cnf --> --default-extra-file=/PATH/TO/CONF_FILE --> ~/.my.cnf
+
+						# mkdir /etc/mysql
+						# cp support-files/my-large.cnf /etc/mysql/my.cnf
+
+						添加三个选项：
+						datadir = /mydata/data
+						innodb_file_per_table = on
+						skip_name_resolve = on
+
+			MariaDB的程序组成：
+				C:
+					mysql：CLI交互式客户端程序；
+					mysqldump, mysqladmin...
+				S:
+					mysqld_safe
+					mysqld
+					mysqld_multi
+
+			服务器监听的两种socket地址：
+				ip socket: 监听在tcp的3306端口，支持远程通信；
+				unix sock: 监听在sock文件上(/tmp/mysql.sock, /var/lib/mysql/mysql.sock)，仅支持本地通信；
+					server: localhost, 127.0.0.1
+
+			命令行交互式客户端程序：mysql
+				mysql
+					-uUSERNAME: 用户名；默认为root
+					-hHOST: 服务器主机; 默认为localhost
+					-pPASSWORD：用户的密码;  默认为空密码
+
+					注意：mysql用户账号由两部分组成：'USERNAME'@'HOST'; 其中HOST用于限制此用户可通过哪些主机远程连接mysql服务；
+						支持使用通配符：
+							%: 匹配任意长度的任意字符；
+								172.16.0.0/16, 172.16.%.%
+							_: 匹配任意单个字符；
+
+					命令：
+						客户端命令：本地执行
+							mysql> help
+							每个命令都完整形式和简写格式；
+								status, \s
+
+						服务端命令：通过mysql协议发往服务器执行并取回结果
+							每个命令都必须命令结束符号；默认为分号；
+
+				关系型数据库的常见组件：
+					数据库：database
+					表：table
+						行：row
+						列：column
+					索引：index
+					视图：view
+					用户：user
+					权限：privilege
+
+					存储过程：procedure  #
+					存储函数：function   #有返回结果
+					触发器：trigger
+					事件调度器：event scheduler
+
+				mysql_secure_installation：安全初始化
+           #设置管理员密码
+           #清除匿名用户

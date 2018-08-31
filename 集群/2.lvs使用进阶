@@ -1,0 +1,329 @@
+管理集群服务
+    ipvsadm -A|E -t|u|f service-address [-s scheduler]
+    ipvsadm -D -t|u|f service-address
+
+    service-address:
+      tcp: -t ip:port
+      udp: -u ip:port
+      fwm: -f mark
+
+    -s scheculer:
+      默认为wlc
+
+  管理集群服务中的RS
+    ipvsadm -a|e -t|u|f service-address -r server-address [-g|i|m] [-w weight]
+    ipvsadm -d -t|u|f service-address -r server-address
+
+    server-address:
+      ip[:port]
+
+    lvs-type:
+      -g: gateway, dr
+      -i: ipip, tun
+      -m: masquerade, nat
+
+  清空和查看：
+    ipvsadm -C
+    ipvsadm -L|l [options]
+      -n: numeric，基于数字格式显示地址和端口；
+      -c: connection，显示ipvs连接；
+      --stats：统计数据
+      --rate: 速率
+      --exact: 精确值
+
+  保存和重载：
+        ipvsadm -R
+        ipvsadm -S [-n]
+
+      置零计数器：
+        ipvsadm -Z [-t|u|f service-address]
+
+  lvs-nat：
+
+  作业：
+    nat模型实现http和https两种负载均衡集群；
+      ssl:
+        RS: 都要提供同一个私钥和同一个证书；
+
+  lvs-dr:
+    两个内核参数：
+      arp_ignore
+      arp_announce
+
+
+    director:
+      ~]# ifconfig eno16777736:0 172.16.100.10/32 broadcast 172.16.100.10 up
+      ~]# route add -host 172.16.100.10 dev eno16777736:0
+
+    RS:
+
+    ~]# echo 1 > /proc/sys/net/ipv4/conf/all/arp_ignore
+    ~]# echo 1 > /proc/sys/net/ipv4/conf/eth0/arp_ignore
+    ~]# echo 2 > /proc/sys/net/ipv4/conf/all/arp_announce
+    ~]# echo 2 > /proc/sys/net/ipv4/conf/eth0/arp_announce
+
+    ~]# ifconfig lo:0 172.16.100.10/32 broadcast 172.16.100.10 up
+    ~]# route add -host 172.16.100.10 dev lo:0
+
+作业：
+    dr模型实现http和https两种负载均衡集群；
+      ssl:
+        RS: 都要提供同一个私钥和同一个证书；
+    dr模型实现mysql负载均衡集群；
+
+    拓展：规划拓扑实现，VIP与RIP不在同一网络中的集群；
+
+  博客作业：lvs的类型、lvs调度方法、lvs-nat和lvs-dr模型演示；
+
+回顾：
+lvs: l4 switch, l4 router
+  vip, port, {tcp|udp}
+
+lvs-type:
+  lvs-nat, masquerade
+  lvs-dr, gateway
+  lvs-tun, ipip
+  lvs-fullnat (keepalived)
+
+lvs scheduler:
+  static: rr, wrr, sh, dh
+  dynamic: lc, wlc, sed, nq, lblc, lblcr #wlc 最好用也是默认 但不一定适用全部场景
+    overhead: active connections, inactive connections
+
+lvs-dr: vip, dip/rip
+
+  bridge, nat, host-only,
+
+lvs(3)
+
+netfilter:
+  PREROUTING --> INPUT
+  PREROUTING --> FORWARD --> POSTROUTING
+  OUTPUT --> POSTROUTING
+
+ipvs: INPUT
+
+FWM:
+  PREROUTING:
+    -j MARK --set-mark 10
+
+  ipvs:
+    -A -f 10
+
+通过FWM定义集群的方式：
+  (1) 在director上netfilter的mangle表的PREROUTING定义用于“打标”的规则
+    ~]# iptables -t mangle -A PREROUTING -d $vip -p $protocol --dports $port -j MARK --set-mark #
+      $vip: VIP地址
+      $protocol：协议
+      $port: 协议端口
+  (2) 基于FWM定义集群服务：
+    ~]# ipvsadm -A -f # -s scheduler
+    ~]#
+
+  功用：将共享一组RS的集群服务统一进行定义；
+
+session保持：
+  session绑定
+  session复制
+  session服务器
+
+  session绑定：lvs sh算法
+    对某一特定服务；
+
+lvs persistence：lvs的持久连接
+
+  功能：无论ipvs使用何种调度方法，其都能实现将来自于同一个Client的请求始终定向至第一次调度时挑选出的RS；
+
+    持久连接模板：独立于算法
+      sourceip rs timer
+
+  对多个共享同一组RS的服务器，需要统一进行绑定?
+
+  持久连接的实现方式：
+    每端口持久：PPC，单服务持久调度
+    每FWM持久：PFWMC，单FWM持久调度
+      PORT AFFINITY
+    每客户端持久：PCC，单客户端持久调度
+      director会将用户的任何请求都识别为集群服务，并向RS进行调度
+        TCP：1-65535
+        UDP: 1-65535
+
+HA:
+  SPOF: Single Point of Failure
+
+  director: 高可用集群；
+  realserver: 让director对其做健康状态检测，并且根据检测的结果自动完成添加或移除等管理功能；
+
+    1、基于协议层次检查
+      ip: icmp
+      传输层：检测端口的开放状态
+      应用层：请求获取关键性的资源
+
+    2、检查频度
+
+    3、状态判断
+      下线：ok --> failure --> failure --> failure
+      上线：failure --> ok --> ok
+
+    4、back server, sorry server
+
+
+  示例脚本：
+    #!/bin/bash
+    #
+    fwm=6
+    sorry_server=127.0.0.1
+    rs=('172.16.100.21' '172.16.100.22')
+    rw=('1' '2')
+    type='-g'
+    chkloop=3
+    rsstatus=(0 0)
+    logfile=/var/log/ipvs_health_check.log
+
+    addrs() {
+      ipvsadm -a -f $fwm -r $1 $type -w $2
+      [ $? -eq 0 ] && return 0 || return 1
+    }
+
+    delrs() {
+      ipvsadm -d -f $fwm -r $1
+      [ $? -eq 0 ] && return 0 || return 1
+    }
+
+    chkrs() {
+      local i=1
+      while [ $i -le $chkloop ]; do
+        if curl --connect-timeout 1 -s http://$1/.health.html | grep "OK" &> /dev/null; then
+          return 0
+        fi
+        let i++
+        sleep 1
+      done
+      return 1
+    }
+
+    initstatus() {
+      for host in `seq 0 $[${#rs[@]}-1]`; do
+        if chkrs ${rs[$host]}; then
+          if [ ${rsstatus[$host]} -eq 0 ]; then
+            rsstatus[$host]=1
+          fi
+        else
+          if [ ${rsstatus[$host]} -eq 1 ]; then
+            rsstatus[$host]=0
+          fi
+        fi
+      done
+    }
+
+    initstatus
+    while :; do
+      for host in `seq 0 $[${#rs[@]}-1]`; do
+        if chkrs ${rs[$host]}; then
+          if [ ${rsstatus[$host]} -eq 0 ]; then
+            addrs ${rs[$host]} ${rw[$host]}
+            [ $? -eq 0 ] && rsstatus[$host]=1
+          fi
+        else
+          if [ ${rsstatus[$host]} -eq 1 ]; then
+            delrs ${rs[$host]} ${rw[$host]}
+            [ $? -eq 0 ] && rsstatus[$host]=0
+          fi
+        fi
+      done
+      sleep 5
+    done
+
+附：director和rs的示例脚本
+
+  DR类型director脚本示例：
+    #!/bin/bash
+    #
+    vip=172.16.100.33
+    rip=('172.16.100.8' '172.16.100.9')
+    weight=('1' '2')
+    port=80
+    scheduler=rr
+    ipvstype='-g'
+
+    case $1 in
+    start)
+      iptables -F -t filter
+      ipvsadm -C
+
+      ifconfig eth0:0 $vip broadcast $vip netmask 255.255.255.255 up
+      route add -host $vip dev eth0:0
+      echo 1 > /proc/sys/net/ipv4/ip_forward
+
+      ipvsadm -A -t $vip:$port -s $scheduler
+      [ $? -eq 0 ] && echo "ipvs service $vip:$port added."  || exit 2
+      for i in `seq 0 $[${#rip[@]}-1]`; do
+        ipvsadm -a -t $vip:$port -r ${rip[$i]} $ipvstype -w ${weight[$i]}
+        [ $? -eq 0 ] && echo "RS ${rip[$i]} added."
+      done
+      touch /var/lock/subsys/ipvs
+      ;;
+    stop)
+      echo 0 > /proc/sys/net/ipv4/ip_forward
+      ipvsadm -C
+      ifconfig eth0:0 down
+      rm -f /var/lock/subsys/ipvs
+      echo "ipvs stopped."
+      ;;
+    status)
+      if [ -f /var/lock/subsys/ipvs ]; then
+        echo "ipvs is running."
+        ipvsadm -L -n
+      else
+        echo "ipvs is stopped."
+      fi
+      ;;
+    *)
+      echo "Usage: `basename $0` {start|stop|status}"
+      exit 3
+      ;;
+    esac
+
+
+    DR类型RS脚本示例：
+    #!/bin/bash
+    #
+    vip=172.16.100.33
+    interface="lo:0"
+
+    case $1 in
+    start)
+      echo 1 > /proc/sys/net/ipv4/conf/all/arp_ignore
+      echo 1 > /proc/sys/net/ipv4/conf/lo/arp_ignore
+      echo 2 > /proc/sys/net/ipv4/conf/all/arp_announce
+      echo 2 > /proc/sys/net/ipv4/conf/lo/arp_announce
+
+      ifconfig $interface $vip broadcast $vip netmask 255.255.255.255 up
+      route add -host $vip dev $interface
+      ;;
+    stop)
+      echo 0 > /proc/sys/net/ipv4/conf/all/arp_ignore
+      echo 0 > /proc/sys/net/ipv4/conf/lo/arp_ignore
+      echo 0 > /proc/sys/net/ipv4/conf/all/arp_announce
+      echo 0 > /proc/sys/net/ipv4/conf/lo/arp_announce
+
+      ifconfig $interface down
+      ;;
+    status)
+      if ifconfig lo:0 |grep $vip &> /dev/null; then
+        echo "ipvs is running."
+      else
+        echo "ipvs is stopped."
+      fi
+      ;;
+    *)
+      echo "Usage: `basename $0` {start|stop|status}"
+      exit 1
+    esac
+
+课堂实践任务：
+  (1) 建立一个由至少两个RS组成的负载均衡集群；rs用于提供apache+php，mysql由单独的服务器实现；
+  (2) 部署安装discuz_x3.1；分别基于rr/lc/sh算法调度，查看两台rs是否都接收到了请求；
+    部署环境说明：假设页面访问路径为/www/app/discuz，则需要将discuz_3.1部署于/www/app目录中，而后将/www/app/discuz创建为符号链接，链接至带版本号的目录上；多台RS路径均采用此方式；
+  (3) 基于灰度的方式进行应用程序升级；
+  (4) 尝试着写脚本自动进行灰度发布；

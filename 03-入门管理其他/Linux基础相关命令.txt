@@ -1,0 +1,70 @@
+Linux基础相关命令
+
+总览：
+  基础命令date 、hwclock 、cal 、echo 、which、reboot、shutdown
+  tr
+
+基础命令
+    date：
+    		date [OPTION]... [+FORMAT]
+    				- %D
+    				- %F
+    				- %T
+       	 设置时间 date [MMDDhhmm[[CC]YY][.ss]]
+
+	  hwclock: 显示硬件时钟
+	    	   -s, --hctosys
+           -w, --systohc
+
+    Linux的两种时钟
+    系统时钟：由Linux内核通过CPU的工作频率进行的计时；
+    硬件时钟：
+
+    cal：日历
+
+
+    echo： 回显命令
+        echo
+    			-n: 禁止自动添加换行符号；
+    			-e: 允许使用转义符；
+    			\n: 换行
+    			\t: 制表符
+
+        which：显示命令对应的程序文件路径
+    		  which [OPTION] COMMAND
+        		--skip-alias：禁止显示别名
+
+        whatis：
+    		  mkwhatis:可将当前系统上所有的帮助手册及与之对应的关键字创建为一个数据库；
+
+    系统管理类命令：
+        关机：halt, poweroff, shutdown, init 0
+        重启：reboot, shutdown, init 6
+
+
+        reboot
+        			-f: 强制，不调用shutdown
+        			-p: 切断电源
+
+        shutdown：
+        		shutdown [OPTION]...  TIME [MESSAGE]
+        	   		-r: reboot -h: halt
+        	   		-c：cancel
+
+        	   		TIME:
+        				now: 立刻
+        				+m: 相对时间表示法，从命令提交开始多久之后；例如 +3；
+        				hh:mm: 绝对时间表示，指明具体时间；
+                su: Switch User
+    su
+        su -l user -c 'COMMAND'   #临时切换身份运行命令
+
+      	su -l root -c 'COMMAND'
+
+      	su -l root
+
+
+    用户登录信息查看命令：
+      	whoami: 显示当前登录有效用户；
+      	who: 系统当前所有的登录会话；
+      	w: 系统当前所有的登录会话及所做的操作；

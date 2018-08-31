@@ -1,0 +1,59 @@
+DML: INSERT, DELETE, SELECT, UPDATE
+
+INSERT INTO：
+
+		INSERT [INTO] tbl_name [(col_name,...)] {VALUES | VALUE} (val1,...),(...),... #一个括号一行
+
+			 第一种：一次插入一行或多行
+				 INSERT INTO tb_name [(col1, col2,...)] {VALUES|VALUE} (val1, val2,...)[,(val21,val22,...),...]
+
+			 第二种：
+				 INSERT INTO tb_name SET col1=val1, col2=val2, ...
+
+			 第三种： 从其他表查询到结果插入
+				 INSERT INTO tb_name SELECT clause
+
+				 REPLACE的工作机制：与INSERT相同，除了在新插入的数据与表中的主键或惟一索引定义的数据相同会替换老的行；
+
+
+     #INSERT INTO students VALUES (1,'HaSaki','m'),(2,'YiKu','f');
+           MariaDB [tesdb]> SELECT * FROM students;
+           +-----+--------+--------+
+           | sid | name   | gender |
+           +-----+--------+--------+
+           |   1 | HaSaki | m      |
+           |   2 | YiKu   | f      |
+           +-----+--------+--------+
+    #INSERT INTO students (sid,name) VALUES (3,'Wei'),(4,'Katerin');
+
+
+DELETE:
+
+		DELETE [LOW_PRIORITY] [QUICK] [IGNORE] FROM tbl_name
+				[WHERE where_condition]
+				[ORDER BY ...]
+				[LIMIT row_count]
+
+		注意：一定要有限制条件，否则将清空表中所有数据
+				限制条件：
+						WHERE
+						LIMIT
+		TRUNCATE tb_name
+			DELETE:
+				DELETE FROM tbl_name [WHERE clause] [ORDER BY 'col_name' [DESC]] [LIMIT [m,]n];
+	          # DELETE FROM students WHERE sid=3;
+
+UPDATE:
+
+			UPDATE [LOW_PRIORITY] [IGNORE] table_reference
+					SET col_name1=val1 [, col_name2=val2] ...
+					[WHERE where_condition]
+					[ORDER BY ...]
+					[LIMIT row_count]
+
+		UPDATE通常情况下，必须要使用WHERE子句，或者使用LIMIT限制要修改的行数；否则会修改所有行的指定字段
+
+		UPDATE tbl_name SET col1=new_val1, col2=new_val2, ... [WHERE clause] [ORDER BY 'col_name' [DESC]] [LIMIT [m,]n];
+	      # UPDATE students SET gender='f' WHERE sid=4;
+
+		--safe-updates

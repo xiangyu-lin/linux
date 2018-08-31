@@ -1,0 +1,83 @@
+
+回顾：
+
+Linux Cluster:
+  LB, HA, HP
+    LB：
+      软件：lvs, haproxy, nginx, ats
+      硬件：F5, Netscaler, A10
+
+LVS:
+  ipvsadm/ipvs
+
+  Director/RealServer
+    Client --> Director --> RS# (scheduler)
+
+  LVS-TYPE：
+    lvs-nat: MASQUERADE
+    lvs-dr:  GATEWAY
+    lvs-tun: IPIP
+    lvs-fullnat
+
+  lvs-nat：请求和响应报文都经由director
+  lvs-dr: 仅请求报文经由director，响应报文是由RS直接响应给Client
+
+ipvs(2)
+
+lvs-type:
+  lvs-nat: RIP与DIP必须在同一网段；
+  lvs-dr：Director与RS必须在同一物理网络；
+  lvs-tun：
+    不修改请求报文的ip首部，而是通过在原有的ip首部（cip<-->vip）之外，再封装一个ip首部(dip<-->rip)；
+
+      (1) RIP, DIP, VIP全得是公网地址；
+      (2) RS的网关的不能指向DIP；
+      (3) 请求报文必须经由director调度，但响应报文必须不能经由director；
+      (4) 不支持端口映射；
+      (5) RS的OS必须支持隧道功能；
+
+  lvs-fullnat：
+    director通过同时修改请求报文的目标地址和源地址进行转发；
+
+      (1) VIP是公网地址；RIP和DIP是私网地址，二者无须在同一网络中；
+      (2) RS接收到的请求报文的源地址为DIP，因此要响应给DIP；
+      (3) 请求报文和响应报文都必须经由Director;
+      (4) 支持端口映射机制；
+      (5) RS可以使用任意OS；
+
+http: stateless
+  session保持：
+    session绑定：
+      source ip hash
+      cookie
+    session集群：
+    session服务器：
+
+lvs scheduler：
+  静态方法：仅根据算法本身进行调度；
+    RR：round robin，轮调
+    WRR：weighted rr,
+    SH: source hash, 实现session保持的机制；将来自于同一个IP的请求始终调度至同一RS；
+    DH：destination hash, 将对同一个目标的请求始终发往同一个RS；
+  动态方法：根据算法及各RS的当前负载状态进行调度；
+      Overhead=
+    LC：Least Connection
+      Overhead=Active*256+Inactive
+    WLC: Weighted LC
+      Overhead=(Active*256+Inactive)/weight
+    SED: Shortest Expection Delay
+      Overhead=(Active+1)*256/weight
+    NQ：Never Queue
+      SED算法的改进；
+    LBLC：Locality-Based LC，即为动态的DH算法；
+      正向代理情形下的cache server调度；
+    LBLCR：Locality-Based Least-Connection with Replication，带复制功能的LBLC算法；
+
+ipvs的集群服务：
+  tcp, udp, ah, esp, ah_esp, sctp
+
+  (1) 一个ipvs主机可以同时定义多个cluster service；
+    tcp, udp
+  (2) 一个cluster service上至少应该一个real server；
+
+    定义时：指明lvs-type, 以及lvs scheduler；

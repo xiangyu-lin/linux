@@ -1,0 +1,117 @@
+Linux任务计划、周期性任务执行
+	未来的某时间点执行一次任务：at, batch
+	周期性运行某任务: cron
+
+at
+    #确保 atd 服务开启
+
+    at [option] TIME  #ctrl D 结束
+
+      	TIME:
+        		HH:MM [YYYY-mm-dd]
+        		noon, midnight, teatime  #中午12点,凌晨零点,下午4点
+        		tomorrow #明天此时
+        		HH:MM tomorrow #明天某时
+        		now+#{minutes,hours,days, OR weeks}
+
+      	常用选项：
+        		-q QUEUE:
+        		-l: 列出指定队列中等待运行的作业；相当于atq
+        		-d: 删除指定的作业；相当于atrm
+        		-c: 查看具体作业任务；
+        		-f /path/from/somefile：从指定的文件中读取任务； #命令列表
+
+    	注意：作业的执行结果以邮件通知给相关用户；
+
+batch
+    让系统自行选择空闲时间去执行此处指定的任务；
+
+cron
+    周期性任务计划
+
+    相关的程序包：
+			cronie: 主程序包，提供了crond守护进程及相关辅助工具；
+			cronie-anacron：cronie的补充程序；用于监控cronie任务执行状况；如cronie中的任务在过去该运行的时间点未能正常运行，则anacron会随后启动一次此任务；
+			crontabs：包含CentOS提供系统维护任务；
+
+			确保crond守护处于运行状态：
+				CentOS 7:
+					systemctl status crond
+						...running...
+				CentOS 6:
+					service crond status
+
+		计划要周期性执行的任务提交给crond，由其来实现到点运行。
+			系统cron任务：系统维护作业
+				/etc/crontab #配置文件
+			用户cron任务：
+				crontab命令
+
+			系统cron任务
+
+        SHELL=/bin/bash #指定shell
+        PATH=/sbin:/bin:/usr/sbin:/usr/bin #执行命令路径
+        MAILTO=root #指定接收执行结果邮箱
+        HOME=/      #执行命令时使用的主目录
+
+				# Example of job definition:
+				# .---------------- minute (0 - 59)
+				# |  .------------- hour (0 - 23)
+				# |  |  .---------- day of month (1 - 31)
+				# |  |  |  .------- month (1 - 12) OR jan,feb,mar,apr ...
+				# |  |  |  |  .---- day of week (0 - 6) (Sunday=0 or 7) OR sun,mon,tue,wed,thu,fri,sat
+				# |  |  |  |  |
+				# *  *  *  *  * user-name  command to be executed
+
+				例如：晚上9点10分运行echo命令；
+					10 21 * * *	 gentoo /bin/echo "Howdy!"
+
+				时间表示法：
+					(1) 特定值；
+						给定时间点有效取值范围内的值；
+					(2) *
+						给定时间点上有效取值范围内的所有值；
+						表示“每...”；
+					(3) 离散取值：,
+						#,#,#
+					(4) 连续取值：-
+						#-#
+					(5) 在指定时间范围上，定义步长：
+						/#: #即为步长
+
+				例如：每3小时echo命令；
+					0 */3 * * * gentoo /bin/echo "howdy!"
+
+			用户cron：
+				crontab命令定义，每个用户都有专用的cron任务文件：/var/spool/cron/USERNAME
+
+				crontab命令：
+					crontab [-u user] [-l | -r | -e] [-i]
+						-l: 列出所有任务；
+						-e: 编辑任务；
+						-r: 移除所有任务；
+						-i：同-r一同使用，以交互式模式让用户有选择地移除指定任务；
+						-u user: 仅root可运行，代为为指定用户管理cron任务；
+
+			注意：运行结果以邮件通知给相关用户；
+				(1) COMMAND > /dev/null
+				(2) COMMAND &> /dev/null
+
+				对于cron任务来讲，%有特殊用途；如果在命令中要使用%，则需要转义；不过，如果把%放置于单引号中，也可以不用转义；
+
+			思考：
+				(1) 如何在秒级别运行任务？
+					* * * * * for min in 0 1 2; do echo "hi"; sleep 20; done
+				(2) 如何实现每7分钟运行一次任务?
+
+		练习：
+			1、每4小时备份一次/etc目录至/backup目录中，保存的文件名称格式为“etc-yyyy-mm-dd-HH.tar.xz”；
+
+			2、每周2, 4, 7备份/var/log/messages文件至/logs目录中，文件名形如“messages-yyyymmdd”；
+
+			3、每两小时取出当前系统/proc/meminfo文件中以S或M开头的信息追加至/tmp/meminfo.txt文件中；
+
+			4、工作日时间内，每小执行一次“ip addr show”命令；
+#注意
+    定义系统重启任务时必须放到 /etc/crontab 中
+    用root账户创建 crontab 也是无效的

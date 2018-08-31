@@ -1,0 +1,71 @@
+3. 权限管理
+
+  文件的权限主要针对三类对象进行定义：
+    - owner: 属主, u
+    - group: 属组, g
+    - other: 其他, o
+
+  每个文件针对每类访问者都定义了三种权限：
+    - r: Readable
+    - w: Writable
+    - x: eXcutable
+
+	- 文件：
+		- r: 可使用文件查看类工具获取其内容；
+		- w: 可修改其内容；
+		- x: 可以把此文件提请内核启动为一个进程；
+
+	- 目录：
+		- r: 可以使用ls查看此目录中文件列表；
+		- w: 可在此目录中创建文件，也可删除此目录中的文件；
+		- x: 可以使用ls -l查看此目录中文件列表，可以cd进入此目录；
+				--- 	000 	0
+				--x 	001 	1
+				-w- 	010 	2
+				-wx 	011 	3
+				r-- 	100 	4
+				r-x 	101 	5
+				rw- 	110 	6
+				rwx 	111 	7
+				例如：
+					640: rw-r-----
+					rwxr-xr-x: 755
+  修改文件权限
+    chmod
+  		chmod [OPTION]... OCTAL-MODE FILE...
+        -R: 递归修改权限
+  		chmod [OPTION]... MODE[,MODE]... FILE...
+  			MODE:
+  				修改一类用户的所有权限：
+  					u=
+  					g=
+  					o=
+  					ug=
+  					a=
+  					u=,g=
+  				修改一类用户某位或某些位权限
+  					u+
+  					u-
+  		chmod [OPTION]... --reference=RFILE FILE...
+  			参考RFILE文件的权限，将FILE的修改为同RFILE；
+  修改文件的属主
+    - chown
+  		chown [OPTION]... [OWNER][:[GROUP]] FILE...
+  			用法：
+  				OWNER
+  				OWNER:GROUP
+  				:GROUP
+  			Note: 命令中的冒号可用.替换；
+  				-R: 递归
+  		chown [OPTION]... --reference=RFILE FILE...
+  修改文件的属组
+  文件或目录创建时的遮罩码
+    umask
+      FILE: 666-umask
+      	> Note: 如果某类的用户的权限减得的结果中存在x权限，则将其权限+1
+
+      DIR: 777-umask
+
+        umask: 查看
+
+      	umask #: 设定

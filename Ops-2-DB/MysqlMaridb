@@ -1,0 +1,484 @@
+修改字段定义：
+		插入新字段
+		删除字段
+			DROP [COLUMN] col_name
+		修改字段
+			修改字段名称
+				CHANGE [COLUMN] old_col_name new_col_name column_definition
+  			[FIRST|AFTER col_name]
+			修改字段类型及属性等
+				 MODIFY [COLUMN] col_name column_definition
+  			[FIRST | AFTER col_name]
+	修改约束、键或索引：
+
+	表改名：
+		 RENAME [TO|AS] new_tbl_name
+
+		 mysql> RENAME TABLE old_name TO new_name;
+
+	指定排序标准的字段：
+		 ORDER BY col_name [, col_name] ...
+
+	转换字符集及排序规则：
+		CONVERT TO CHARACTER SET charset_name [COLLATE collation_name]
+
+	表选项修改：
+		[table_options]
+  	ENGINE [=] engine_name
+  		mysql> SHOW ENGINES;
+  	AUTO_INCREMENT [=] value
+  	[DEFAULT] CHARACTER SET [=] charset_name
+  	[DEFAULT] COLLATE [=] collation_name
+  	COMMENT [=] 'string'
+  	DELAY_KEY_WRITE [=] {0 | 1}
+  	ROW_FORMAT [=] {DEFAULT|DYNAMIC|FIXED|COMPRESSED|REDUNDANT|COMPACT}
+  	TABLESPACE tablespace_name [STORAGE {DISK|MEMORY|DEFAULT}]
+
+练习题：
+
+新建如下表（包括结构和内容）：
+
+ID    Name          Age     Gender     Course
+1     Ling Huchong   24      Male       Hamogong
+2     Huang Rong    19      Female     Chilian Shenzhang
+3     Lu Wushaung   18      Female     Jiuyang Shenggong
+4     Zhu Ziliu     52      Male       Pixie Jianfa
+5     Chen Jialuo   22      Male       Xianglong Shiba Zhang
+6	  Ou Yangfeng   70      Male       Shenxiang Bannuo Gong
+
+1、新增字段：
+	Class 字段定义自行选择；放置于Name字段后；
+
+2、将ID字段名称修改为TID;
+
+3、将Age字段放置最后；
+
+	SELECT语句的执行流程：
+		FROM clause --> WHERE clause --> GROUP BY --> HAVING clause --> ORDER BY ... --> SELECT --> LIMIT
+
+	SELECT语句:
+		DISTINCT：指定的结果相同的只显示一次；
+		SQL_CACHE：缓存于查询缓存中；
+		SQL_NO_CACHE：不缓存查询结果；
+
+---
+	MySQL简单复制应用扩展：
+		1、主从服务器时间要同步（ntp）：
+			*/5 * * * * /usr/sbin/ntpdate 172.16.0.1
+
+		2、如何限制从服务器只读？
+			read-only=ON
+
+			注意：仅能限制那不具有SUPER权限用户无法执行写操作；
+
+			想限制所有用户：
+			mysql> FLUSH TABLES WITH READ LOCK;
+
+		3、如何主从复制时的事务安全？
+			在主服务器上配置：
+			sync_binlog=1
+
+		4、半同步复制
+			主服务器：
+				mysql> INSTALL PLUGIN rpl_semi_sync_master SONAME 'semisync_master.so';
+				mysql> SHOW GLOBAL VARIABLES LIKE '%semi%';
+				mysql> SET GLOBAL rpl_semi_sync_master_enabled=ON;
+				mysql> SET GLOBAL rpl_semi_sync_master_timeout=1000;
+
+			从服务器：
+				mysql> INSTALL PLUGIN rpl_semi_sync_slave SONAME 'semisync_slave.so';
+				mysql> SET GLOBAL rpl_semi_sync_slave_enabled=ON;
+				mysql> STOP SLAVE IO_THREAD; START SLAVE IO_THREAD;
+
+			在主服务器验正半同步复制是否生效：
+				mysql> SHOW GLOBAL STATUS LIKE '%semi%';
+
+			一旦某次等待超时，会自动降级为异步；
+
+		5、复制过滤器
+			master:
+				binlog_do_db=
+				binlog_ignore_db=
+
+			slave:
+				replicate_do_db=
+				replicate_ignore_db=
+
+				replicate_do_table= db_name.table_name
+				replicate_ignore_table=
+
+				replicate_wild_do_table=
+				replicate_wild_ignore_table=
+
+			my.cnf: [mysqld]
+
+
+		6、多主模型
+
+			1）、在两台服务器上各自建立一个具有复制权限的用户；
+			2）、修改配置文件：
+			# 主服务器A上
+			[mysqld]
+			server-id = 10
+			log-bin = mysql-bin
+			relay-log = relay-mysql
+			auto-increment-offset = 1
+			auto-increment-increment = 2
+
+
+			# 主服务器B上
+			[mysqld]
+			server-id = 20
+			log-bin = mysql-bin
+			relay-log = relay-mysql
+			auto-increment-increment = 2
+			# 步长
+			auto-increment-offset = 2
+			# 起始值
+
+			3）、如果此时两台服务器均为新建立，且无其它写入操作，各服务器只需记录当前自己二进制日志文件及事件位置，以之作为另外的服务器复制起始位置即可
+
+			serverA|mysql> SHOW MASTER STATUS\G
+			************************** 1. row ***************************
+			            File: mysql-bin.000001
+			        Position: 710
+			    Binlog_Do_DB:
+			Binlog_Ignore_DB:
+			1 row in set (0.00 sec)
+
+			server2|mysql> SHOW MASTER STATUS\G
+			mysql> SHOW MASTER STATUS\G
+			*************************** 1. row ***************************
+			            File: mysql-bin.000003
+			        Position: 811
+			    Binlog_Do_DB:
+			Binlog_Ignore_DB:
+			1 row in set (0.00 sec)
+
+			4、各服务器接下来指定对另一台服务器为自己的主服务器即可：
+			serverA|mysql> CHANGE MASTER TO ...,MASTER_LOG_FILE='mysql-bin.000003', MASTER_LOG_POS=811
+
+			serverB|mysql> CHANGE MASTER TO ...,MASTER_LOG_FILE='mysql-bin.000001', MASTER_LOG_POS=710
+
+
+			多主，且高可用的解决方案：
+				MMM：Multi Master MySQL
+				MHA：MySQL HA
+
+			独自完成：MMM
+
+		7、SSL
+			独自完成：基于ssl的复制
+
+	博客作业：
+		1、上述1-7步；
+		2、MMM
+
+		主从：
+
+			从多个服务器，以均衡为目的挑选一个响应客户端请求的服务器：
+				round-robin:
+				取模
+
+
+			memcached: 缓存能力+API
+			读写分离：读写分离，负载均衡
+
+
+	复制相关的文件：
+		master.info: 文本文件，保存从服务器连接至主服务时所需要的信息，每行一个值；
+		relay-log.info: 文本文件，保存了复制位置：包括二进制日志和中继日志的文件及位置；
+
+		为了复制的安全性：
+			sync_master_info = 1
+			sync_relay_log = 1
+			sync_relay_log_info = 1
+
+		从服务器意外崩溃时，建议使用pt-slave-start命令来启动slave;
+
+	基于行和基于语句复制：
+		基于语句：
+			数据量小；易于查看；适应性强；
+			有些语句无法做精确复制；无法对使用了触发器、存储过程等代码的应用实现精确复制；
+
+		基于行：
+			能够精确完成有着触发器、存储过程等代码场景中的复制；能完成几乎所有的复制功能；较少的CPU占用率；
+			无法判断执行了什么样的SQL语句；数据量可能略大；
+
+	从服务器落后于主服务器：
+		Seconds_Behind_Master: 0
+
+	评估主从服务表中的数据是否一致：
+		pt-table-checksum
+
+		如果数据不一致，解决办法
+			1、重新备份并在从服务器导入数据；
+			2、pt-table-sync
+
+		为了提高复制时的数据安全性，在主服务器上的设定：
+			sync_binlog = 1
+			innodb_flush_log_at_trx_commit = 1
+				此参数的值设定为1，性能下降会较严重；因此，一般设定为2等，此时，主服务器崩溃依然有可能导致从服务器无法获取到全部的二进制日志事件；
+
+		如果master意外崩溃导致二进制日志中的某事件损坏，可以在从服务器使用如下参数忽略：
+			sql_slave_skip_counter = 0
+
+
+	第三方复制解决方案：Tungsten, Galera
+
+	MariaDB GTID:
+
+		文档中应用MariaDB-10，需要做的修改：
+		1、不支持的参数：
+			gtid-mode=on
+			enforce-gtid-consistency=true
+
+		2、修改的参数：
+			slave-parallel-workers参数修改为slave-parallel-threads
+
+		3、连接至主服务使用的命令：
+			一个新的参数：MASTER_USER_GTID={current_pos|slave_pos|no}
+
+			CHANGE MASTER TO master_host="127.0.0.1", master_port=3310, master_user="root", master_use_gtid=current_pos;
+
+	Multi-Source Replication:
+		CHANGE MASTER ['connection_name'] ...
+		FLUSH RELAY LOGS ['connection_name']
+		MASTER_POS_WAIT(....,['connection_name'])
+		RESET SLAVE ['connection_name']
+		SHOW RELAYLOG ['connection_name'] EVENTS
+		SHOW SLAVE ['connection_name'] STATUS
+		SHOW ALL SLAVES STATUS
+		START SLAVE ['connection_name'...]]
+		START ALL SLAVES ...
+		STOP SLAVE ['connection_name'] ...
+		STOP ALL SLAVES ...
+
+		总结：多源复制，每个源应该使用不同的数据库；多源复制目前不支持半同步复制；
+
+	总结：GTID（HA，多线程复制）、多源复制
+
+
+忘记管理员密码的解决方式：
+	启动mysqld时，使用--skip-grant-tables 和 --skip-networking
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+tcpdump -i any -s 0 -A -n -p port 3306 and src IP|grep -i -E 'SELECT|INSERT'
+
+协议报文分析器：
+	sniffer: 商业工具
+
+tcpdump, wireshark(GUI), tshark(CLI)
+
+tcpdump [options] 过滤条件
+
+获取报文的条件：
+
+ip src host 172.16.100.1
+tcp src or dst port 21
+
+udp dst port 53
+
+tcp src or dst port 21 AND src host 172.16.100.1
+
+tcp port 21 AND host 172.16.100.1
+
+
+协议：
+	ip, tcp, udp
+
+流向：
+	src, dst, src and dst, src or dst
+
+对象:
+	net, port, host
+		src net 192.168.0.0/24
+		src host 192.168.10.16
+		dst port 3306
+
+多条件：
+	and, or, !
+
+
+	tcpdump -i eth0 -A -nn -s0 tcp dst port 3306 and ip dst host 192.168.10.16
+
+
+
+
+
+tcpdump的语法：
+tcpdump [options] [Protocol] [Direction] [Host(s)] [Value] [Logical Operations] [Other expression]
+
+Protocol(协议):
+Values(取值): ether, fddi, ip, arp, rarp, decnet, lat, sca, moprc, mopdl, tcp and udp.
+If no protocol is specified, all the protocols are used.
+
+Direction(流向):
+Values(取值): src, dst, src and dst, src or dst
+If no source or destination is specified, the "src or dst" keywords are applied. (默认是src or dst)
+For example, "host 10.2.2.2" is equivalent to "src or dst host 10.2.2.2".
+
+
+Host(s)(主机):
+Values(替代关键字): net, port, host, portrange.
+If no host(s) is specified, the "host" keyword is used. 默认如果此段没有指定关键字，默认即host。
+For example, "src 10.1.1.1" is equivalent to "src host 10.1.1.1".
+
+
+Logical Operations:
+(1) AND
+and or &&
+(2) OR
+or or ||
+(3) EXCEPT
+not or !
+
+
+常用选项：
+
+-i any : Listen on all interfaces just to see if you're seeing any traffic.
+-n : Don't resolve hostnames.
+-nn : Don't resolve hostnames or port names.
+-X : Show the packet's contents in both hex and ASCII.
+-XX : Same as -X, but also shows the ethernet header.
+-v, -vv, -vvv : Increase the amount of packet information you get back.
+-c # : Only get x number of packets and then stop.
+-s : Define the snaplength (size) of the capture in bytes. Use -s0 to get everything, unless you are intentionally capturing less.
+-S : Print absolute sequence numbers.
+-e : Get the ethernet header as well.
+-q : Show less protocol information.
+-E : Decrypt IPSEC traffic by providing an encryption key.
+-A ：Display Captured Packets in ASCII
+-w /path/to/some_file : Capture the packets and write into a file
+-r /path/from/some_file : Reading the packets from a saved file
+-tttt : Capture packets with proper readable timestamp
+
+
+ip host 172.16.100.1
+ip src host 172.16.100.1
+ip dst host 172.16.100.1
+ip src and dst host 172.16.100.1
+
+tcp src port 110
+
+
+
+tcpdump -i eth0 -s0 -nn -XX tcp dst port 3306 and dst host 192.168.10.16
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Mroonga（http://mroonga.org/）

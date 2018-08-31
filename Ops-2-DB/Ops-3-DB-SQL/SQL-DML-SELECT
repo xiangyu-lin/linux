@@ -1,0 +1,123 @@
+SELECT:
+
+  SELECT col1,col2,... FROM tbl_name [WHERE clause] [ORDER BY 'col_name' [DESC]] [LIMIT [m,]n];
+    字段表示法：
+      *: 所有字段；
+      as：字段别名，col1 AS alias1;
+          #MariaDB [tesdb]> SELECT sid as stuid,name as stuname FROM students;
+              +-------+---------+
+              | stuid | stuname |
+              +-------+---------+
+              |     1 | HaSaki  |
+              |     4 | Katerin |
+              |     3 | Wei     |
+              |     2 | YiKu    |
+              +-------+---------+
+
+
+      #SELECT * FROM students WHERE sid <3;
+      #SELECT * FROM students WHERE gender = 'm';
+      #SELECT * FROM students WHERE gender IS NOT NULL;
+
+      #SELECT * FROM students ORDER BY name; #根据姓名排序 默认ASC
+      #SELECT * FROM students ORDER BY name DESC; #倒叙
+
+      #SELECT * FROM students ORDER BY name DESC LIMIT 2; #显示前两个
+      #SELECT * FROM students ORDER BY name DESC LIMIT 1,2; #跳过第一个显示两个
+
+
+SELECT
+
+  Query Cache： #mysql重要的组件
+
+    #mysql> select now 系统时间
+
+  查询执行路径中的组件 ：查询缓存、解析器、预处理器、优化器、查询执行引擎、存储引擎；
+
+  SELECT 语句的执行流程：
+    FROM Clause --> WHERE Clause --> GROUP BY --> HAVING Clause --> ORDER BY --> SELECT --> LIMIT
+
+  单表查询
+    SELECT
+        [ALL | DISTINCT | DISTINCTROW ]
+          [SQL_CACHE | SQL_NO_CACHE] [SQL_CALC_FOUND_ROWS]
+        select_expr [, select_expr ...]
+        [FROM table_references
+        [WHERE where_condition]
+        [GROUP BY {col_name | expr | position}
+          [ASC | DESC], ... [WITH ROLLUP]]
+        [HAVING where_condition]
+        [ORDER BY {col_name | expr | position}
+          [ASC | DESC], ...]
+        [LIMIT {[offset,] row_count | row_count OFFSET offset}]
+
+        DISTINCT 数据去重 每样数据只保留一个
+        SQL_CACHE 显示指定存储查询结果于缓存之中
+        SQL_NO_CACHE 显式指定查询结果不缓存
+
+        query_cache_type 的值为"ON"时，查询缓存功能打开
+            SELECT的结果符合缓存条件即会缓存，否则不予缓存
+            显式指定SQL_NO_CACHE 时 才不予缓存
+        query_cache_type 的值为'DEMAND' 时，查询缓存功能按需进行
+            显式指定SQL_CACHE的SELECT语句才会缓存其他均不予缓存
+
+    字段显示可以使用别名：
+        col1 AS alias1,col2 AS alias2,...
+
+    WHERE子句：指明过滤条件以实现选择的功能：
+        过滤条件：布尔型表达式；、
+        算数操作符：+,-,*,/,%
+        比较操作符：
+            =,!=,<>,>,>=,<,<=       #<>不等于
+            BETWEEN ... AND ...
+                BETWEEN min_num AND max_num #
+                SELECT * FROM students WHERE sid BETWEEN 1 AND 3;
+            IN (元素1,元素2,...)
+            IS NULL  #取值为空
+            IS NOT NULL
+            LIKE:
+                % : 任意长度任意字符
+                _ ：任意单个字符
+                #SELECT * FROM students WHERE name LIKE 'Y%';
+            RLIKE: 匹配字串可用正则
+            REGEXP: 匹配字串可用正则
+        逻辑条件操作符
+            NOT
+            AND
+            OR
+            XOR 亦或
+
+
+      GROUP： 根据指定的条件把查询结果进行"分组"以用于做 "聚合运算"：
+         avg(),max(),min(),count(),sum()
+
+         HAVING:对分组聚合运算后的结果指定过滤条件
+
+      ORDER BY:根据指定的字段对查询结果进行排序；
+          升序
+          降序 DESC
+
+---
+
+## 多表查询
+
+  mysql> SELECT * FROM students,teachers;
+
+等值连接
+
+  mysql> SELECT * FROM students,teachers WHERE students.TeacherID=teachers.TID;
+  mysql> SELECT s.NAME AS StuName,t.Name AS TeaName FROM students AS s,teachers AS t WHERE s.TeacherID=t.TID;
+  mysql> SELECT s.NAME,c.Class FROM students AS s RIGHT JOIN classes AS c ON s.ClassID=c.ClassID;
+
+自联结
+
+  mysql> SELECT s.Name,t.Name FROM students AS s,students AS t WHERE s.TeacherID=t.StuID;
+
+子查询
+
+  mysql> SELECT Name,Age FROM students WHERE Age>(SELECT avg(Age) FROM students);
+  mysql> SELECT Name,Age FROM students WHERE Age IN (SELECT Age FROM teachers);
+
+联合查询
+
+  mysql> SELECT Name,Age FROM students UNION SELECT Name,Age FROM teachers;

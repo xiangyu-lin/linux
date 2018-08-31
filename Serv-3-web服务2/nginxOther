@@ -1,0 +1,255 @@
+LB Cluster:
+	提升系统容量的方式：
+		scale up:
+		scale out:
+
+	session保持方法：
+		session绑定：sh
+		session复制：
+		session服务器：memcached, redis （key-value, kv store）#键值存储
+
+	I/O：
+		同步/异步：#调用者收到请求是立即返回还是收到结果再返回
+		阻塞/非阻塞：
+
+		libevent: 项目
+			epoll()
+
+	Nginx的配置：
+		main, event, http
+
+		http {
+			directive
+			server {
+				listen
+				server_name
+				location {
+					if {
+					}
+				}
+			}
+			server {
+			}
+		}
+
+	ngx_http_proxy_module模块：
+		server {
+			listen
+			server_name
+			location / {
+				proxy_pass http://192.16.3.7:80/;
+			}
+		}
+
+		格式：
+			location  /uri {
+				rewrite
+				proxy_pass http://back_server:port/newuri; #后端服务器地址
+			}
+
+			/uri --> /newuri
+
+		http://www.magedu.com
+		http://mysql.magedu.com
+
+			例
+			location / {
+	            proxy_pass   http://127.0.0.1;
+
+			location /bbs/ { #代理部分
+			    proxy_pass   http://127.0.0.1/bbs/;
+
+			location /forum/ { #代理部分 前后path不一致
+			    proxy_pass   http://127.0.0.1/bbs;
+
+			location /forum/ { #前端某路径代理后端根
+			    proxy_pass   http://127.0.0.1;
+
+			location ~* \.(jpg|png|gif)$ { # 正则匹配 不区分大小写 所有jpg|png|gif结尾的
+			    proxy_pass   http://127.0.0.1;
+			    #127.0.0.1 后不能加url ；会把之前匹配到的补上来
+
+			后端记录客户端real-IP
+			location /forum/ { #前端某路径代理后端根
+			    proxy_pass   http://127.0.0.1;
+			    proxy_set_header Host $host;
+			    proxy_set_header X-Real-IP $remote_addr
+
+			 	后端服务器 (如果是apache) 改日志记录格式
+			 	LogFormat "%{X-Real-IP}i %l %u %t \"
+
+			#------------
+			proxy_cache_path path [levels=levels] keys_zone=name:size [inactive=time] [max_size=size] ;
+				#inactive 非活动期限
+
+			proxy_cache_path /cache/nginx levels=1:1 keys_zone=mycache:32M [inactive=time] [max_size=size] ;
+
+			location / {
+				proxy_cache mycache; #调用cache功能
+				proxy_cache_vaild 200 1d;
+				proxy_cache_vaild 301 302 10m;
+				proxy_cache_vaild any 1m;
+				proxy_cache_use_stale error timeout http_500 http_502 http_503 http_504; #这几种类型可以使用过期缓存
+			}
+
+	proxy_connect_timeout: #
+	proxy_hide_header: #隐藏首部
+
+	upstream #负载均衡模块
+
+		upstream name {
+			server address [parameters];
+			ip_hash;
+		}
+		upstream name {
+			server 192.168.112.247 weight=2; 权重
+			server 192.168.112.252;
+			ip_hash; #同一个客户端后续会访问同一个服务器
+		}
+
+
+回顾：nginx
+	ngx_http_proxy_module,  ngx_http_upstream_module
+
+	ngx_http_proxy_module：实现反向代理及缓存功能
+		proxy_pass http://{SERVER_IP|UPSTREAM_NAME}/uri
+
+		proxy_cache_path path [levels=levels] keys_zone=name:size [inactive=time] [max_size=size] ;
+
+		proxy_cache zone_name;
+
+		proxy_cache_valid [code] time;
+		proxy_cache_method
+		proxy_cache_use_stale error timeout ...
+		proxy_cache_min_uses
+
+		proxy_cache_bypass string: 设置在何种情形下nginx将不从cache取数据的；
+			$cookie_nocache $arg_nocache  $http_authorization
+
+		proxy_set_header
+
+	ngx_http_upstream_module:
+		定义服务器组
+			proxy_pass, fastcgi_pass, uwsgi_pass,
+
+		upstream name {
+			server address [parameters];
+			ip_hash;
+		}
+
+回顾：nginx
+	ngx_http_proxy_module,  ngx_http_upstream_module
+
+	ngx_http_proxy_module：实现反向代理及缓存功能
+		proxy_pass http://{SERVER_IP|UPSTREAM_NAME}/uri
+
+		proxy_cache_path path [levels=levels] keys_zone=name:size [inactive=time] [max_size=size] ;
+			#[max_size=size] 最大可用于缓存的空间
+
+		proxy_cache zone_name;
+
+		proxy_cache_valid [code] time; #指明不同响应码 缓存时长
+		proxy_cache_method
+		proxy_cache_use_stale error timeout ...
+		proxy_cache_min_uses
+
+		proxy_cache_bypass string: 设置在何种情形下nginx将不从cache取数据的；
+			$cookie_nocache $arg_nocache  $http_authorization
+
+		proxy_set_header
+
+	ngx_http_upstream_module:
+		定义服务器组
+			proxy_pass, fastcgi_pass, uwsgi_pass,
+
+		upstream name {
+			server address [parameters];
+			ip_hash; #基于源地址绑定 客户端始终访问同一个服务器
+				#可以用down临时移除某个服务器
+				如 server address down;
+		}
+
+nginx(2)
+
+	SNAT模式的大量Client
+
+		基于sticky实现session绑定：
+			cookie
+			route
+			learn () #稳定版尚不支持
+
+	least_conn: 调度方法，最少连接；
+
+	health_check; #用在location中
+		建议：关闭访问日志； #在此location中关闭日志
+
+	自定义响应首部： #location 中
+		add_header X-Via $server_addr;
+		add_header X-Cache $upstream_cache_status; #Hit Miss
+
+	LNMP
+		fpm
+
+	编辑/etc/nginx/fastcgi_params，将其内容更改为如下内容：
+		fastcgi_param  GATEWAY_INTERFACE  CGI/1.1;
+		fastcgi_param  SERVER_SOFTWARE    nginx;
+		fastcgi_param  QUERY_STRING       $query_string;
+		fastcgi_param  REQUEST_METHOD     $request_method;
+		fastcgi_param  CONTENT_TYPE       $content_type;
+		fastcgi_param  CONTENT_LENGTH     $content_length;
+		fastcgi_param  SCRIPT_FILENAME    $document_root$fastcgi_script_name;
+		fastcgi_param  SCRIPT_NAME        $fastcgi_script_name;
+		fastcgi_param  REQUEST_URI        $request_uri;
+		fastcgi_param  DOCUMENT_URI       $document_uri;
+		fastcgi_param  DOCUMENT_ROOT      $document_root;
+		fastcgi_param  SERVER_PROTOCOL    $server_protocol;
+		fastcgi_param  REMOTE_ADDR        $remote_addr;
+		fastcgi_param  REMOTE_PORT        $remote_port;
+		fastcgi_param  SERVER_ADDR        $server_addr;
+		fastcgi_param  SERVER_PORT        $server_port;
+		fastcgi_param  SERVER_NAME        $server_name;
+
+
+	LNAMP php-mysql mysql-server php-fpm
+
+	LNMP, fastcgi_cache
+  location ~ \.php$ {
+    fastcgi_cache fcgicache;
+    fastcgi_cache_valid 200 10m,
+    fastcgi_cache_valid 302 3m;
+    fastcgi_cache_valid any 1m;
+
+  }
+
+
+	练习：
+		(1) root为同一路径；
+		(2) root为不同的路径；
+			location \.php$ {
+				root /web/app/wp;
+			}
+
+			location / {
+				root /web/htdocs;
+			}
+
+			如何解决问题？
+
+		(3) fpm server为另一主机；
+			location \.php$ {
+				fastcgi_pass fastcgi://172.16.100.9:9000;
+			}
+
+			location / {
+				root /web/htdocs;
+			}
+
+	总结：
+		cache:
+			proxy_cache
+			fastcgi_cache
+
+	练习：
+		使用nginx反向代理（rr调度）用户请求至两个以上的后端LAMP（按标准路径部署的有pma）；
+		(1) 手动更新所有节点上的pma至新版本；
+		(2) 写脚本实现如上过程；

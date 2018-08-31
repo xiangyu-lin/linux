@@ -1,0 +1,117 @@
+SQL:ANSI SQL #sql标准
+   SQL-86,SQL-89,SQL-92,SQL-99,SQL-03
+
+MySQL数据类型：
+  字符型
+  数值型
+  日期时间型
+  内建类型
+
+	字符型
+      CHAR,VARCHAR: 定长数据类型
+      BINARY,VARBINARY: 变长数据类型：需要结束符；
+      TEXT：TINYTEXT;MEDIUMTEXT;LONGTEXT
+      BLOB TINYBLOB MEDIUMBLOB LONGBLOB
+      ENUM,SET
+	数值型
+		精确数值型
+			整型 TINYINT SMALLINT MEDIUMINT INT BIGINT
+			十进制数据：decimal
+		近似数值型
+			单精度浮点型 FLOAT
+			双精度浮点型 DOUBAL
+      BIT
+
+	日期时间型
+		日期型 DATE
+		时间型 TIME
+		日期时间型 DATETIME
+		时间戳 TIMESTAMP
+    YEAR(2),YEAR(4)
+
+字符类型的修饰符
+	CHAR、VARCHAR和TEXT几种字符型常用的属性修饰符：(不区分大小写)
+		NOT NULL：非空约束
+		NULL：允许为空(一般不用单独指明)
+		DEFAULT 'string'：默认值，不适用于TEXT类型
+		CHARACTER SET '字符集'  :指明使用的字符集
+			mysql> SHOW VARIABLES LIKE '%char%';
+			mysql> SHOW CHARACTER SET
+		COLLATION '规则': 排序规则
+			mysql> SHOW COLLATION;
+
+	BINARY、VARBINARY和BLOB几种字符型常用的属性修饰符：(区分大小写)
+		NOT NULL
+		NULL
+		DEFAULT: 不适用于BLOB
+
+  整型的常用属性修饰符：
+  	NULL
+  	NOT NULL
+  	DEFAULT
+
+    AUTO_INCREMENT：自动增长
+  		前提：非空，且惟一；支持索引，非负值；
+  	   UNSIGNED：无符号
+       PRIMARY KEY|UNIQUE KEY
+       NOT NULL
+       mysql>
+
+	浮点型常用修饰符：
+		NOT NULL
+		NULL
+		DEFAULT
+		UNSIGNED
+
+	日期时间型的修饰符：
+		NOT NULL
+		NULL
+		DEFAULT
+
+	ENUM和SET的修饰符：
+		NOT NULL
+		NULL
+		DEFAULT ''
+
+MySQL SQL_MODE: SQL模式 定义对约束的响应行为
+
+	常用MODE TRADITIONAL, STRICT_TRANS_TABLES, or STRICT_ALL_TABLES
+
+  修改方式
+      前提：默认仅管理员有权限修改全局变量
+
+      mysql> SET {GLOBAL|SESSION} VARIABLE_NAME='VALUE';
+
+      需要修改权限：仅对修改后新创建的会话有效;对已经建立的会话无效
+      注意：无论是全局还是会话级别的动态变量修改，在重启mysqld后都会失效；想永久有效，可定义在配置文件中的相应段中[mysqld]；
+
+      mysql> SET GLOBAL sql_mode='MODE';
+      mysql> SET @@global.sql_mode='MODE';
+
+      mysql> SET SESSION sql_mode='MODE';
+      mysql> SET @@session.sql_mode='MODE'
+
+
+	设定服务器变量的值：（仅用于支持动态的变量）
+		支持修改的服务器变量：
+			动态变量：可以MySQL运行时修改
+			静态变量：于配置文件中修改其值，并重启后方能生效；
+
+		服务器变量从其生效范围来讲，有两类：
+			全局变量：服务器级别，修改之后仅对新建立的会话有效；
+			会话变量：会话级别，仅对当前会话有效；
+				会话建立时，从全局继承各变量；
+
+		查看服务器变量：
+			mysql> SHOW [{GLOBAL|SESSION}] VARIABLES [LIKE ''];
+          #mysql> SHOW GLOBAL VARIABLES LIKE 'sql_mode';
+			mysql> SELECT @@{GLOBAL|SESSION}.VARILABLE_NAME;
+			mysql> SELECT * FROM INFORMATION_SCHEMA.GLOBAL_VARIABLES WHERE VARIABLE_NAME='SOME_VARIABLE_NAME';
+			mysql> SELECT * FROM INFORMATION_SCHEMA.SESSION_VARIABLES WHERE VARIABLE_NAME='SOME_VARIABLE_NAME';
+
+	MySQL中字符大小写：
+		1、SQL关键字及函数名不区分字符大小写；
+		2、数据库、表及视图名称的大小区分与否取决于低层OS及FS
+		3、存储过程、存储函数及事件调度器的名字不区分大小写，但触发器区分；
+		4、表别名区分大不写；
+		5、对字段中的数据，如果字段类型为Binary类型，则区分大小写；非Binary不区分大小写；

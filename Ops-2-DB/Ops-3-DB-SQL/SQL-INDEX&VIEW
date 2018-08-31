@@ -1,0 +1,41 @@
+DDL & DML
+		索引管理
+						按特定的数据结构存储的数据：
+
+				索引类型
+						聚集索引、非聚集索引：数据是否与索引存储在一起
+						主键索引、辅助索引
+						稠密索引、稀疏索引：是否索引了每一个数据项
+						B+ TREE BAH、R TREE
+						简单索引、组合索引
+
+						左前缀索引
+						覆盖索引
+
+				管理索引的途径：
+						创建索引：创建表时指定：CREATE INDEX
+						创建或删除索引：修改标的命令
+						删除索引： DROP INDEX
+
+						查看表上的索引
+								SHOW {INDEX | INDEXES |KEYS}
+								 		{FROM | IN} btl_name
+										[{FROM | IN} db_name]
+										[WHERE expr]
+						EXPLAIN
+
+		MySQL视图:
+			存储下来的SELECT语句； (对于mysql而言 视图功能不完善 尽量不用)
+
+			创建方法：
+				CREATE
+
+				    VIEW view_name [(column_list)]
+				    AS select_statement
+				    [WITH [CASCADED | LOCAL] CHECK OPTION]
+			删除视图
+				DROP VIEW [IF EXISTS]
+				    view_name [, view_name] ...
+				    [RESTRICT | CASCADE]
+
+			视图中的数据事实上存储于“基表”中，因此，其实修改操作也会针对基表实现：其修改操作受基表限制；

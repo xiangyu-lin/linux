@@ -1,0 +1,81 @@
+OpenSSH：
+    简介
+      	ssh: secure shell, protocol, 22/tcp, 安全的远程登录
+      	OpenSSH: ssh协议的开源实现； #dropbear：另一个开源实现；
+
+      	SSH协议版本
+      		v1: 基于CRC-32做MAC，不安全；man-in-middle
+      		v2：双方主机协议选择安全的MAC方式
+      			基于DH算法做密钥交换，基于RSA或DSA算法实现身份认证；
+
+      	两种方式的用户登录认证：
+      			基于password
+      			基于key
+
+      	OpenSSH:   #C/S
+      			C: ssh, scp, sftp  #客户端
+      				Windows客户端：
+      					xshell, putty, securecrt, sshsecureshellclient
+      			S: sshd #服务器端
+		客户端组件：
+			ssh, 配置文件：/etc/ssh/ssh_config
+
+			格式：ssh [user@]host [COMMAND] #command 不登录只在主机上执行某命令
+				  ssh [-l user] host [COMMAND]
+				  	-p port：远程服务器监听的端口；
+				  	-X: 支持x11转发；#显示图形
+				  	-Y：支持信任的x11转发；
+
+				  基于密钥的认证：  #ssh-keygen -t rsa
+				  	(1) 在客户端生成密钥对儿
+				  		ssh-keygen -t rsa [-P ''] [-f "~/.ssh/id_rsa"]  #生成密钥对 -P'' 密码为空
+				  	(2) 把公钥传输至远程服务器对应用户的家目录
+				  		ssh-copy-id [-i [identity_file]] [user@]machine
+				  	(3) 测试
+
+
+		服务器端：
+			sshd, 配置文件: /etc/ssh/sshd_config
+			常用参数：
+				Port 22022
+				ListenAddress ip #指明监听地址
+				PermitRootLogin yes #允许管理员登录
+				PasswordAuthentication yes #基于口令的认证
+
+				限制可登录用户的办法：
+					AllowUsers user1 user2 user3
+					AllowGroups
+
+
+    基于openssh的工具 scp sftp
+        scp命令： #基于ssh工作的 #认证过秘钥的话就不用输入密码
+          scp [options] SRC... DEST/
+
+          存在两种情形：
+          拉	PULL：scp [options] [user@]host:/PATH/FROM/SOMEFILE /PATH/TO/SOMEWHERE
+          推	PUSH: scp [options] /PATH/FROM/SOMEFILE [user@]host:/PATH/TO/SOMEWHERE
+              常用选项：
+                -r: 递归复制；
+                -p: 保持原文件的属性信息；
+                -q: 静默模式
+                -P PORT: 指明remote host的监听的端口；
+
+        sftp命令：#基于ssh工作的
+          sftp [user@]host
+          sftp> help
+
+
+  	ssh服务的最佳实践：
+  		1、不要使用默认端口；
+  		2、禁止使用protocol version 1；
+  		3、限制可登录用户；
+  		4、设定空闲会话超时时长；
+  		5、利用防火墙设置ssh访问策略；
+  		6、仅监听特定的IP地址；
+  		7、基于口令认证时，使用强密码策略；
+  			# tr -dc A-Za-z0-9_ < /dev/urandom | head -c 30 | xargs
+  		8、使用基于密钥的认证；
+  		9、禁止使用空密码； #默认禁止
+  		10、禁止root用户直接登录；
+  		11、限制ssh的访问频度和并发在线数；
+  		12、做好日志，经常分析；

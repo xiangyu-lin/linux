@@ -1,0 +1,91 @@
+待办
+
+/proc/sys/net/ipv4/icmp_echo_ignore_all 值改为1禁ping
+
+ACL访问控制权限
+		[root@localhost ~]# getfacl f1
+		# file: f1
+		# owner: root
+		# group: root
+		user::rwx
+		group::rwx
+		other::rwx
+
+		[root@localhost ~]# setfacl -m u:lin:rw f1 #用户lin 可读写f1
+		[root@localhost ~]# setfacl -m g:lin:rw f1 #用户组lin 可读写
+		[root@localhost ~]# setfacl -x u:lin f1    #删除f1对于用户lin的acl条目
+		[root@localhost ~]# setfacl -x g:lin f1   #删除f1用户组lin的acl条目
+		[root@localhost ~]# setfacl -b f1   #清空ACL条目
+
+内核模块
+    [root@xy ~]# lsmod #查看已加载的内核模块
+    [root@xy ~]# modinfo ip_vs #查看内核模块信息
+    [root@xy ~]# modprobe ip_vs #  动态加载内核模块
+    [root@xy ~]# lsmod |grep ip_vs
+    ip_vs                 126705  0
+    libcrc32c               1246  1 ip_vs
+    ipv6                  336368  22 ip_vs
+    [root@xy ~]# modprobe -r ip_vs 动态卸载内核模块ip_vs
+    modprobe 方式仅在当前有效 全局生效需要把命令行写入配置文件
+    [root@xy ~]# echo "modprobe ipvs" >> /etc/rc.d/rc.local
+
+    开启内核路由转发功能 0关1开
+    [root@xy ~]# echo "1" > /proc/sys/net/ipv4/ip_forward
+
+    禁止所有icmp回包(禁ping) 1禁ping  0允许ping
+    [root@xy ~]# echo "1" > /proc/sys/net/ipv4/icmp_echo_ignore_all
+
+    调整所有进程可以打开的文件总数量(当大量用户访问网站资源是，可能会因该数字过小而导致错误)
+    [root@xy ~]# echo "181728" > /proc/sys/fs/file-max
+
+    永久调整内核参数 (上面3项在里面修改或写在里面)
+    [root@localhost ~]# vim /etc/sysctl.conf
+    [root@localhost ~]# sysctl -p   使其生效
+
+
+
+网络安装路径
+
+Example mirrors.sonic.net	Alternatively use CentOS own mirror
+http://mirrors.sonic.net/centos/7/os/x86_64/	http://mirror.centos.org/centos/7/os/x86_64/
+http://mirrors.sonic.net/centos/7.4.1708/os/x86_64/	http://mirror.centos.org/centos/7.4.1708/os/x86_64/
+
+http://mirrors.163.com/centos/6.9/os/x86_64/images/install.img
+	电子邮件服务：
+		smtp: simple mail transmission protocol, 用于传送邮件；
+		pop3: Post Office Protocol
+		imap4：Internet Mail Access Protocol
+
+		mailx - send and receive Internet mail
+
+			MUA：Mail User Agent
+
+			mailx [-s 'SUBJECT'] username[@hostname]
+				邮件正文的生成：
+					(1) 直接给出，Ctrl+d;
+					(2) 输入重定向；
+					(3) 通过管道；
+						echo -e "How are you?\nHow old are you?" | mail
+
+			mailx
+
+	sleep命令：
+		sleep NUMBER[SUFFIX]...
+
+			SUFFIX:
+				s: 秒, 默认
+				m: 分
+				h: 小时
+				d: 天
+
+# 删除某些无法删除的文件
+
+		[root@localhost software]# ls -i
+			29103126 ?
+
+		嗯。我不知道你这个是什么文件，是不是文件名乱码呀，有特殊字符啊，空格呀什么的。
+		但是我们都知道文件 有一个inode的值。
+		你可以试试通过 inode值来删除一个文件。
+		ls  -i
+		记下inode  .假设为 10000000000
+		find . -inum 10000000000 -exec rm -f {} \;

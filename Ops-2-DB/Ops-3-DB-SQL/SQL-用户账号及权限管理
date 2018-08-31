@@ -1,0 +1,166 @@
+MySQL用户管理：
+
+	MySQL的权限类别： priv_type
+		库级别
+		表级别
+		字段级别
+		管理类
+		程序类
+
+		管理类权限：
+			CREATE TEMPORARY TABLES
+			CREATE USER
+			FILE
+			SUPER
+			SHOW DATABASES
+			RELOAD
+			SHUTDOWN
+			REPLICATION SLAVE
+			REPLICATION CLIENT
+			LOCK TABLES
+			PROCESS
+
+		程序类
+			FUNCTION
+			PROCEDURE
+			TRIGGER
+
+			CREATE, ALTER, DROP, EXCUTE
+
+		库级别和表级别： (TABLE or DATABASES)
+			ALTER
+			ALTER ROUTINE
+			CREATE
+			CREATE ROUTINE
+			CREATE VIEW
+			DROP
+			EXECUTE
+			GRNAT OPTION:能够把自己获得的权限赠与其他用户一个副本
+			INDEX
+			SHOW VIEW
+
+		数据操作（表级别）：
+			SELECT
+			INSERT
+			UPDATE
+			DELETE
+
+		字段级别：
+			SELECT(col1,...)
+			UPDATE(col1,...)
+			INSERT(col1,...)
+
+		所有权限：
+			ALL [PRIVILEGES]
+
+
+	元数据数据库：mysql
+		授权表
+			db, host, user
+			column_priv, tables_priv, procs_priv, proxies_priv
+
+用户帐号：
+		username@hostname, password
+			username: 用户名
+			host: 此用户访问mysqld服务时允许通过哪些主机远程创建连接；
+				IP、网络地址、主机名、通配符(%和_);
+						172.16.%.%
+						testuser@'172.16.100.1__' (172.16.100.100-172.16.100.199)
+
+		禁止检查主机名：
+			my.cnf, [mysqld]
+			skip_name_resolve = yes
+			#skip_name_resolve = on
+
+		用户帐号管理：
+			CREATE USER
+			DROP USER
+			RENAME USER
+			SET PASSWORD
+		权限管理：
+			GRANT
+			REVOKE
+
+
+		创建用户 CREATE USER
+			CREATE USER username@hostname [IDENTIFIED BY [PASSWORD] 'password']
+					#CREATE USER 'wpuser'@'%' IDENTIFIED BY 'wppasswd';
+		用户重命名 RENAME USER
+			RENAME USER old_username TO new_username
+		删除用户 DROP USER
+			DROP USER 'USERNAME'@'HOST' #可以删多个用户
+		修改密码
+			(1) SET PASSWORD FOR
+			(2) UPDATE mysql.user SET password=PASSWORD('your_password') WHERE clause;
+			(3) mysqladmin password
+						mysqladmin [OPTIONS] command command ...
+							-u -p -t
+
+		忘记管理员密码的解决办法：(步骤在有道云笔记)
+			(1) 启动mysql进程时，为其使用 --skip-grant-tables --skip-networking(禁止加载授权表以登录 以及远程登录报障安全性)
+			(2) 使用UPTATE命令修改管理员密码
+			(3) 关闭mysql进程,移除上述两个选项，重启mysqld;
+
+
+
+
+	GRANT ALL ON [FUNCTION] *.*
+
+		GRANT priv_type [, priv_type [(column_list)]] ... ON [TABLE|FUNCTION|PROCEDURE]  priv_level
+		    TO username@hostname [IDENTIFIED BY 'password'], [username@hostname [],...]
+		    [REQUIRE SSL]
+		    [WITH with_option ...]
+
+		#GRANT SELECT,DELETE ON tesdb.* TO 'testuser'@'%' IDENTIFIED BY 'testpasswd';   #创建用户及授权
+
+		priv_type: ALL [PRIVILEGES]
+
+		priv_level:
+		    *
+		  | *.*   所有库的所表；
+		  | db_name.* 指定库的所有表；
+		  | db_name.tbl_name 指定库的指定表；
+		  | tbl_name
+		  | db_name.routine_name 指定库的存储例程；
+
+		with_option:
+		    GRANT OPTION
+		  | MAX_QUERIES_PER_HOUR count #每小时允许最大查询数 count是数字
+		  | MAX_UPDATES_PER_HOUR count #更新数
+		  | MAX_CONNECTIONS_PER_HOUR count #链接次数
+		  | MAX_USER_CONNECTIONS count #同一个用户账户同时连接的次数
+
+	查看指定用户获得的授权：
+		SHOW GRANTS FOR 'user'@'host';
+		SHOW GRANTS FOR CURRENT_USER; #查看当前用户授权
+
+	收回授权：
+		REVOKE priv_type [(column_list)] [, priv_type [(column_list)]] ...
+		    ON [object_type] priv_level
+		    FROM user [, user] ...
+
+		REVOKE ALL PRIVILEGES, GRANT OPTION
+		    FROM user [, user] ...
+
+		#REVOKE DELETE ON tesdb.* FROM 'testuser'@'%'; #回收删除权限
+
+	注意：MariaDB服务进程启动时会读取mysql库中的所有授权表至内存中；
+		(1) GRANT或REVOKE等执行权限操作会保存于表中，MariaDB的服务进程会自动重读授权表；
+		(2) 对于不能够或不能及时重读授权表的命令，可手动让MariaDB的服务进程重读授权表：
+			mysql> FLUSH PRIVILEGES;
+
+
+	几个跟用户授权相关的表：
+		db: 库级别权限；
+		host: 主机级别权限，已废弃
+		tables_priv: 表级别权限
+		colomns_priv：列级别的权限
+		procs_priv：存储过程和存储函数相关的权限
+		proxies_priv：代理用户权限
+
+	练习：
+		1、授予testuser能够通过172.16.0.0/16网络内的任意主机访问当前mysql服务器的权限；
+		2、让此用户能够创建及删除testdb数据库，及库中的表；
+		3、让此用户能够在testdb库中的t1表中执行查询、删除、更新和插入操作；
+		4、让此用户能够在testdb库上执行创建和删除索引；
+		5、让此用户能够在testdb.t2表上查询id和name字段，并允许其将此权限转授予其他用户；

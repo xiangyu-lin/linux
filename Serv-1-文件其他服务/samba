@@ -1,0 +1,109 @@
+客户端
+    [root@ErrC7 ~]# yum -y install samba-client
+    [root@ErrC7 ~]# smbclient -L 192.168.112.12 -U samba #查看共享文件夹
+    [root@ErrC7 ~]# smbclient //192.168.112.12/workD -U samba #访问
+
+    [root@ErrC7 ~]# mount -t cifs //192.168.112.12/workD ./workD -o username=samba[,password=123456]  #挂载
+              #需要  yum -y install cifs-utils
+
+    # Windows 作为服务器 直接共享文件夹就可以
+    # Windows 作为客户端直接在我的电脑地址框输入 \\server ip
+
+
+服务端 #centos6
+    示例:
+        [root@ErrC6 ~]# yum -y install samba #安装
+        [root@ErrC6 ~]# vim /etc/samba/smb.conf #配置
+            [share]
+                comment = 'samba share ErrC6'
+                path = /root/samba/share
+                writable = yes
+                guest ok = yes
+
+        [root@ErrC6 ~]# useradd sambauser
+        [root@ErrC6 ~]# smbpasswd -a sambauser
+
+        [root@ErrC6 ~]# mkdir -p /root/samba/share  #创建共享目录
+        [root@ErrC6 ~]# chmod -R 777 /root/samba/share #权限
+        [root@ErrC6 ~]# service nmb restart ; service smb restart #重启服务
+
+笔记
+    smb  : Service Message Block
+    CIFS : Common Internet File System
+
+    安装samba
+        [root@ErrC6 ~]# yum -y install samba
+
+    服务脚本
+        [root@ErrC6 ~]# /etc/rc.d/init.d/nmb
+        [root@ErrC6 ~]# /etc/rc.d/init.d/smb
+
+    主配置文件
+        [root@ErrC6 ~]# /etc/samba/smb.conf
+
+        [root@ErrC6 ~]# testparm #检查配置文件是否有语法错误
+
+    常用配置说明
+
+        #号纯注释 说明信息
+        ;号 是可启用选项
+
+        hosts allow = 127. 192.168.12. 192.168.13.   #白名单 基于ip访问控制
+
+        [homes]
+            comment = Home Directories #注释
+            browseable = no #所有人可见
+            writable = yes #是否可写
+            valid users = %S #%S 表示自己
+
+        [share_name] #自定义共享名
+            path = /root/samba/share #共享路径 重要
+            guest ok = yes #是否允许来宾账号访问
+            public = yes #是否公开 同上
+            writable = yes #是否可写
+            write list = +staff #写用户列表  staff是组名
+
+    创建访问账号
+        [root@ErrC6 ~]# useradd sambauser
+        [root@ErrC6 ~]# smbpasswd -a sambauser
+
+        smbpasswd:
+            -a: 添加账户并设置密码
+            -x: 删除 SMB 账户
+            -d: 禁用账户
+            -e: 启用账户
+
+图形界面配置
+    [root@ErrC6 ~]# yum -y install samba-swat
+    [root@ErrC6 ~]# vim /etc/xinetd.d/swat
+
+        only_from       = 192.168.0.0 #允许访问的地址
+        disable         = no #此处修改为no 启用
+
+    [root@ErrC6 ~]# service xinetd start
+
+    #客户端浏览器访问  #默认用系统账号登陆
+    http://192.168.112.252:901
+
+常见问题
+    1.客户端挂载报错
+    [root@ErrC7 ~]# mount -t cifs //192.168.112.12/workD ./workD -o username=samba
+    mount: //192.168.112.12/workD is write-protected, mounting read-only
+    mount: cannot mount //192.168.112.12/workD read-only
+    解决方法
+    [root@ErrC7 ~]#yum -y install cifs-utils
+
+[root@ErrC6 data]# mount.cifs //192.168.112.12/noc /var/www/html -o user=samba,password=123456,uid=48,gid=48
+mount error(95): Operation not supported
+Refer to the mount.cifs(8) manual page (e.g. man mount.cifs)
+[root@ErrC6 data]# mount.cifs //192.168.112.12/noc /var/www/html -o user=samba,password=123456,uid=48,gid=48,vers=1.0
+
+    samba 共享无权限创建文件问题
+    uid=48(apache) gid=48(apache) groups=48(apache)
+    [root@ErrC7 www]# mount -t cifs //192.168.112.12/noc /var/www/html/ -o user=samba,password=123456,uid=48,gid=48
+
+其他说明
+    samba 由两个守护进程组成 ,都要启动 smb 和 nmb
+    smbd TCP/139 TCP/445
+    nmbd UDP/137
+    [home] 共享路径默认访问登陆用户家目录

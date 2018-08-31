@@ -1,0 +1,51 @@
+proftpd
+
+安装proftpd #centos7
+
+    [root@ErrC7 ~]# wget ftp://ftp.proftpd.org/distrib/source/proftpd-1.3.5e.tar.gz
+    [root@ErrC7 ~]# tar -vxzf proftpd-1.3.5e.tar.gz -C /usr/src/
+    [root@ErrC7 ~]# cd /usr/src/proftpd-1.3.5e/
+    [root@ErrC7 proftpd-1.3.5e]# ./configure --prefix=/usr/local/proftpd --sysconfdir=/etc/ --enable-nls --enable-openssl --enable-shadow
+    [root@ErrC7 proftpd-1.3.5e]# cd /usr/src/proftpd-1.3.5e/locale
+    [root@ErrC7 proftpd-1.3.5e]# make && make install
+
+    [root@ErrC7 ~]# PATH=$PATH:/usr/local/proftpd/bin/
+    [root@ErrC7 ~]# useradd -M -s /sbin/nologin proftp
+
+使用
+    vim /etc/proftp.conf
+        UseEncoding                     UTF-8 CP936
+        User                            proftp
+        Group                           proftp
+        DefaultRoot ~
+        AllowOverwrite          on
+        RequireValidshell off
+        AuthUserFile /usr/local/proftpd/ftpd.passwd #认证密码文件
+
+    [root@ErrC7 proftpd]# /usr/local/proftpd/sbin/proftpd  #启动
+        # 启动之前先kill掉之前的 #不确定需不需要
+
+    # 开机自启 待办
+
+其他说明
+    1.安装选项
+        --prefix=/usr/local/proftpd  #指定安装路径
+        --sysconfdir=/etc/           #配置文件路径
+        --enable-nls                 #支持使用多语言环境
+        --enable-openssl             #支持TLS加密FTP服务
+        --enable-shadow              #支持使用/etc/shadow验证用户密码
+    2.ftpasswd 命令
+        --passwd   #创建密码文件 AuthUserFile 指定的文件
+        --group    #创建组文件
+        --name     #指定创建的用户名
+        --uid
+        --gid
+        --home     #指定家目录
+        --shell    #指定用户shell
+        --file     #指定创建的文件名,默认ftpd.passwd
+
+常见问题
+    1.编译安装问题
+        /bin/sh: line 1: msgfmt: command not found
+        解决:
+        yum -y install gettext-devel

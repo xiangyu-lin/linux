@@ -1,0 +1,255 @@
+keepalived:
+
+	Linux Cluster
+		LB: lvs, nginx
+		HA：keepalived, heartbeat, corosync, cman
+		HP：
+
+		分布式存储：HDFS
+		分布式计算：YARN,
+			batch: MapReduce
+			in-memory: spark
+			stream: storm
+
+	keepalived：
+		Acitve/Passive
+
+		lvs: vip, ipvs rules
+		nginx: vip, nginx service
+
+			resource, 高可用资源
+			HA Service: resources
+
+		ntp: network time protocol
+
+	vrrp：virtual route redundent protocol
+
+		Master/Backup
+
+	keepalived：
+		vrrp协议在Linux主机上以守护进程方式的实现；
+		能够根据配置文件自动生成ipvs规则；
+		对各RS做健康状态检测；
+
+		组件：
+			vrrp stack
+			checkers
+			ipvs wrapper --> ipvs
+
+		配置文件的组成部分：
+			GLOBAL CONFIGURATION
+			VRRPD CONFIGURATION
+				vrrp instance
+				vrrp synchonization group
+			LVS CONFIGURATION
+
+		HA Cluster配置前提：
+			1、本机的主机名，要与hostname(uname -n)获得的名称保持一致；
+				CentOS 6: /etc/sysconfig/network
+				CentOS 7: hostnamectl set-hostname HOSTNAME
+
+				各节点要能互相解析主机名；一般建议通过hosts文件进行解析；
+
+			2、各节点时间同步；
+
+			3、确保iptables及selinux不会成为服务阻碍；
+
+	           virtual_ipaddress {
+	               <IPADDR>/<MASK> brd <IPADDR> dev <STRING> scope <SCOPE> label <LABEL>
+	               192.168.200.17/24 dev eth1
+	               192.168.200.18/24 dev eth2 label eth2:1
+	           }
+
+	           nopreempt：非抢占模式；默认为抢占模式；
+
+	    vrrp_sync_group VG_1 {
+	    	group {
+             VI_1   # name of vrrp_instance (below)
+             VI_2  # One for each moveable IP.
+           }
+	    }
+
+	    vrrp_instance VI_1 {
+	    	eth0
+	    	vip
+	    }
+
+	    vrrp_instance VI_2 {
+	    	eth1
+	    	dip
+	    }
+
+
+	总结：
+		1、日志？
+		2、每个vrrp_instance需要专用的组播地址；
+
+回顾：
+
+	keepalived: vrrp协议的实现；
+		虚拟路由器：
+			MASTER，BACKUP
+		VI：Virtual Instance  #定义虚拟路由器
+
+	keepalived.conf
+		GLOBAL
+		VRRP
+		LVS
+
+keepalived(2)
+
+	在vi中的主机状态发生改变生发送通知：
+        # notify scripts, alert as above
+           notify_master <STRING>|<QUOTED-STRING> #当前节点转换为主节点时发送
+           notify_backup <STRING>|<QUOTED-STRING>
+           notify_fault <STRING>|<QUOTED-STRING>
+           notify <STRING>|<QUOTED-STRING>
+           smtp_alert
+
+           <STRING>|<QUOTED-STRING>
+           字串或者引号引起来的
+
+    配置示例：
+		! Configuration File for keepalived
+
+		global_defs {
+		   notification_email {
+			root@localhost
+		   }
+		   notification_email_from kaadmin@localhost
+		   smtp_server 127.0.0.1
+		   smtp_connect_timeout 30
+		   router_id LVS_DEVEL
+		   vrrp_mcast_group4 224.0.1.118
+		}
+
+		vrrp_script chk_mt {
+		    script "[[ -f /etc/keepalived/down ]] && exit 1 || exit 0"
+		    interval 1
+		    weight -20
+		}
+
+		vrrp_instance VI_1 {
+		    state MASTER
+		    interface eno16777736
+		    virtual_router_id 144
+		    priority 100
+		    advert_int 1
+		    authentication {
+		        auth_type PASS
+		        auth_pass 84ae57f7f4f6
+		    }
+		    virtual_ipaddress {
+			172.16.100.88/16 dev eno16777736 label eno16777736:1
+		    }
+
+		    track_script {
+			chk_mt
+		    }
+
+		    notify_master "/etc/keepalived/notify.sh master"
+		    notify_backup "/etc/keepalived/notify.sh backup"
+		    notify_fault "/etc/keepalived/notify.sh fault"
+		}
+
+		virtual_server 172.16.100.88 80 {
+		    delay_loop 6    # 隔多久进行健康检查
+		    lb_algo wrr     # 负载均衡的调度算法
+		    lb_kind DR      # lvs的类型
+		    nat_mask 255.255.0.0
+		    protocol TCP
+		    sorry_server 127.0.0.1 80  # 当所有realserver都挂了 找一个主机提供错误信息
+
+		    real_server 172.16.100.6 80 {
+		        weight 1  #权重
+		        HTTP_GET {
+		            url {
+		              path /
+		              status_code 200
+		            }
+		            connect_timeout 3
+		            nb_get_retry 3
+		            delay_before_retry 3
+		        }
+		    }
+		    real_server 172.16.100.69 80 {
+		        weight 2
+		        HTTP_GET {
+		            url {
+		              path /
+		              status_code 200
+		            }
+		            connect_timeout 3
+		            nb_get_retry 3
+		            delay_before_retry 3
+		        }
+		    }
+		}
+
+	通知脚本：
+		#!/bin/bash
+		# Author: MageEdu <linuxedu@foxmail.com>
+		# description: An example of notify script
+		#
+
+		vip=172.16.100.88
+		contact='root@localhost'
+
+		notify() {
+		    mailsubject="`hostname` to be $1: $vip floating"
+		    mailbody="`date '+%F %H:%M:%S'`: vrrp transition, `hostname` changed to be $1"
+		    echo $mailbody | mail -s "$mailsubject" $contact
+		}
+
+		case "$1" in
+		    master)
+		        notify master
+		        exit 0
+		    ;;
+		    backup)
+		        notify backup
+		        exit 0
+		    ;;
+		    fault)
+		        notify fault
+		        exit 0
+		    ;;
+		    *)
+		        echo 'Usage: `basename $0` {master|backup|fault}'
+		        exit 1
+		    ;;
+		esac
+
+	keepalived：
+    健康状态监测
+		HTTP_GET
+		SSL_GET(https)
+		TCP_CHECK
+
+		示例：
+				HTTP_GET {
+		            url {
+		              path /
+		              status_code 200
+		            }
+		            connect_timeout 3
+		            nb_get_retry 3
+		            delay_before_retry 3
+		        }
+
+			TCP_CHECK {
+			    connect_timeout 3
+			}
+
+	HA Services: 高可用的服务
+		nginx
+
+
+	100: -25
+	96: -20 79 --> 99 --> 79
+
+	博客作业：
+		keepalived 高可用 ipvs
+			nginx
+
+		active/active

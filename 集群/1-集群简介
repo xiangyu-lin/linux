@@ -1,0 +1,53 @@
+Linux Cluster:
+	LB	HA
+
+Cluster
+	系统扩展的方式：
+		scale up: 向上扩展
+		scale out: 向外扩展
+
+	集群类型：
+		LB：负载均衡集群，Load Balancing
+		HA：高可用集群，High Availability
+		HP：高性能集群，High Performancing
+
+		可用性 = 无故障时间/ 无故障时间+修复时间
+		Availability=90%，95%, 99%, 99.5%, 99.9%, 99.99%, 99.999%
+
+	系统运维：可用 --> 标准化 --> 自动化
+
+	构建高可扩展性系统的重要原则：在系统内部尽量避免串行化和交互；
+
+	GSLB: Global Service Load Balancing #全局负载均衡
+		SLB: Service Load Balancing # 服务负载均衡 #本地
+
+	总结：
+		分层
+		分割
+		分布式
+			分布式应用
+			分布式静态资源
+			分布式数据和存储
+			分布式计算
+
+	LB集群的实现：
+		硬件：
+			F5 BIG-IP
+			Citrix NetScaler
+			A10 A10
+			Array
+			Redware
+		软件：
+			lvs
+			haproxy
+			nginx
+			ats (apache traffic server)
+			perlbal
+
+			基于工作的协议层次划分：
+				传输层：
+					lvs, haproxy(mode tcp)
+						#HAProxy 理论65535并发
+					  #lvs 能达到百万级并发 性能好 但功能薄弱 面试时必问 入门级
+				应用层：
+					haproxy, nginx, ats, perlbal

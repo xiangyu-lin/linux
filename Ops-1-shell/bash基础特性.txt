@@ -1,0 +1,154 @@
+bash基础特性
+
+命令历史          history
+命令别名          alias
+命令执行结果状态
+命令行展开
+glob
+IO重定向及管道
+bash快捷键
+
+命令历史
+    history
+        环境变量
+        HISTSIZE：命令历史记录的条数；
+        HISTFILE：~/.bash_history；
+        HISTFILESIZE：命令历史文件记录历史的条数；
+
+    history #： 显示历史中最近的#条命令；
+        history
+            -d OFFSET
+            -c :clean all
+            -a: 手动追加当前会话缓冲区的命令历史至历史文件中；
+
+    调用历史中的命令：
+    	  !#: 重复执行第#条指令；
+    		!!: 重复执行上一条
+    		!string
+
+  	调用上一条命令的最后一个参数：
+        !$:
+      	ESC, .
+      	Alt+.
+
+    控制命令历史的记录方式：
+        环境变量：HISTCONTROL
+            ignoredups：忽略重复的命令；连续且相同方为“重复”；
+          	ignorespace：忽略所有以空白开头的命令；
+          	ignoreboth：ignoredups, ignorespace；
+        修改环境变量值的方式：export 变量名="值"
+            变量赋值：把赋值符号后面的数据存储于变量名指向内存空间；
+命令别名(alias)
+    通过alias命令实现
+        alias
+            显示当前shell进程所有可用的命令别名；
+
+        alias NAME='VALUE'
+        定义别名NAME，其相当于执行命令VALUE；
+
+		    注意：在命令行中定义的别名，仅对当前shell进程有效；如果想永久有效，要定义在配置文件中；
+    		    仅对当前用户：~/.bashrc
+    			  对所有用户有效：/etc/bashrc
+
+			Note: 编辑配置给出的新配置不会立即生效；
+			bash进程重新读取配置文件
+          source /path/to/config_file
+				  .  /path/to/config_file
+
+      撤消别名：unalias
+     	  unalias [-a] name [name ...]
+        Note: "\COMMAND" 执行原命令
+命令的执行结果状态
+    bash使用特殊变量$?保存最近一条命令的执行状态结果：
+      	0：成功
+      	1-255：失败
+
+    程序执行有两类结果：
+      程序的返回值；
+  	  程序的执行状态结果；
+命令行展开
+    ~: 展开为用户的主目录
+    ~USERNAME：展开为指定用户的主目录
+    {}：可承载一个以逗号分隔的列表，并将其展开为多个路径
+
+		/tmp/{a,b} = /tmp/a, /tmp/b
+		/tmp/{tom,jerry}/hi = /tmp/tom/hi，/tmp/jerry/hi
+glob (globbing)
+    bash中用于实现文件名“通配”
+    通配符:  *, ?, []
+    		(1) *
+    		    任意长度的任意字符
+    		(2) ?
+    		    任意单个字符
+    		(3) []
+    		    匹配指定范围内的任意单个字符
+    			  [0-9]: 数字
+    			  [a-z]：不区分字符大小写
+    		(4) [^]
+    		    匹配指定范围外的任意单个字符
+    			  [^0-9]
+
+		    专用字符集合：
+				[:digit:]：任意数字，相当于0-9
+				[:lower:]：任意小写字母
+				[:upper:]: 任意大写字母
+				[:alpha:]: 任意大小写字母
+				[:alnum:]：任意数字或字母
+				[:space:]：
+				[:punct:]：标点符号
+bash的的I/O重定向及管道
+        程序：指令+数据
+            读入数据：Input
+            输出数据：Output
+        note: 打开的文件都有一个fd: file descriptor (文件描述符)
+
+        标准输入：keyborad, 0
+        标准输出：monitor, 1
+        标准错误输出：monitor, 2
+
+    I/O重定向：改变标准位置
+        输出重定向：
+	          COMMAND > NEW_POS, COMMAND >> NEW_POS
+
+            >：覆盖重定向，目标文件中的原有内容会被清除；
+            >>: 追加重定向，新内容会追加至目标文件尾部；
+
+    		    # set -C: 禁止将内容覆盖输出至已有文件中；
+    		        强制覆盖：>|
+    		    # set +C:
+
+    		    2>: 覆盖重定向错误输出数据流；
+    		    2>>: 追加重定向错误输出数据流；
+
+    		    标准输出和错误输出各自定向至不同位置：
+    			     COMMAND > /path/to/file.out 2> /path/to/error.out
+
+        		合并标准输出和错误输出为同一个数据流进行重定向：
+          			&>：覆盖重定向
+          			&>>：追加重定向
+          			COMMAND > /path/to/file.out 2>&1
+          			COMMAND >> /path/to/file.out 2>>&1
+
+        输入重定向：<
+
+	      tr命令：转换或删除字符
+				    tr [OPTION]... SET1 [SET2]
+
+		    HERE Documentation：<<
+      			# cat << EOF
+      			# cat > /path/to/somefile << EOF
+
+        管道：
+            # COMMAND1 | COMMAND2 | COMMAND3 |...
+            Note：最后一个命令会在当前shell进程的子shell进程中执行；
+
+        tee命令：#双重输出
+            tee [OPTION]... [FILE]...
+            -a 追加 不覆盖
+bash的快捷键
+   	Ctrl+l: 清屏，相当于clear命令；
+   	Ctrl+a：跳转至命令开始处；
+   	Ctrl+e：跳转至命令结尾处；
+   	Ctrl+c：取消命令的执行；
+   	Ctrl+u: 删除命令行首至光村所在处的所有内容；
+   	Ctrl+k: 删除光标所在处至命令行尾部的所有内容；

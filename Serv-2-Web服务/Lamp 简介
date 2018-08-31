@@ -1,0 +1,96 @@
+LAMP:
+    l: linux
+		a: apache
+		m: mariadb, mysql
+		p: php, perl, python
+
+		LAMMP: memcached
+
+		静态资源：静态内容；客户端从服务器获得的资源的表现形式与原文件相同；
+		动态资源：通常是程序文件，需要在服务器执行之后，将执行的结果返回给客户端；
+
+			CGI: Common Gateway Interface
+        #web server 和 应用程序服务器(如php)交互的协议
+        #就是简化版的http协议
+
+			fastcgi
+
+			程序=指令+数据
+
+		httpd+php:
+			modules	#  直接把php当做模块 最常用
+			cgi			#
+			fastcgi(fpm)
+
+		请求流程：Client --> (http) --> httpd --> (cgi) --> application server (rogram file) --> (mysql) --> mariadb
+
+		CentOS 7:
+			程序包：httpd, php, php-mysql, mariadb-server
+				注意：php要求httpd使用prefork MPM
+			启动服务：
+				systemctl start httpd.service
+				systemctl start mariadb.server
+
+		CentOS 6：
+			程序包：httpd, php, php-mysql, mysql-server
+			启动服务：
+				service httpd start
+				service mysqld start
+
+		测试
+			php程序执行环境：
+				test.php
+					<?php
+						phpinfo();
+					?>
+
+			测试php程序与mysql通信
+				test2.php
+					<?php
+						$conn = mysql_connect('HOST','USERNAME','PASSWORD');
+						if ($conn)
+							echo "OK";
+						else
+							echo "Failure";
+
+						mysql_close();
+					?>
+
+      wordpress
+          wget https://cn.wordpress.org/wordpress-4.9.4-zh_CN.zip
+          unzip wordpress-4.9.4-zh_CN.zip
+          cd wordpress/
+          cp wp-config-sample.php wp-config.php
+          vim wp-config.php
+              // ** MySQL 设置 - 具体信息来自您正在使用的主机 ** //
+              /** WordPress数据库的名称 */
+              define('DB_NAME', 'wpdb');
+
+              /** MySQL数据库用户名 */
+              define('DB_USER', 'wpuser');
+
+              /** MySQL数据库密码 */
+              define('DB_PASSWORD', 'wppasswd');
+
+    mysql
+          GRANT ALL ON wpdb.* TO 'wpuser'@'localhost' IDENTIFIED BY 'wppasswd';
+          GRANT ALL ON wpdb.* TO 'wpuser'@'127.0.0.1' IDENTIFIED BY 'wppasswd';
+          CREATE DATABASE wpdb;
+          FLUSH PRIVILEGES;
+          mysql -uwpuser -pwppasswd
+          SHOW DATABASES;
+
+          http://www.xxx.xxx/wordpress
+
+		phpMyAdmin:
+			mariadb的WebGUi
+      yum -y install php-mbstring
+
+		php解释器如何与MariaDB交互：
+			解释器无须与MariaDB交互，那些用到数据存储系统的程序才需要与数据存储交互；
+
+			存储系统：
+				文件系统：文件
+				SQL：MariaDB, Oracle, MSSQL, ...
+				NoSQL：redis, mongodb, hbase, ...
+				NewSQL：

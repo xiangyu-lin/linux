@@ -1,0 +1,74 @@
+iptables: 包过滤型防火墙
+
+	Firewall: 防火墙，隔离工具；工作于主机或网络的边缘，对于进出本主机或网络的报文根据事先定义好的检查规则作匹配检测，对于能够被规则所匹配到的报文做出相应处理的组件；
+		主机防火墙：
+		网络防火墙
+
+	ipfw: ip firewall
+
+	ipchains
+
+	iptables/netfilter
+		framework: netfilter
+			hooks function
+		rule utils: iptables
+
+	功能：
+		filter: 过滤，防火墙；
+		nat: network address translation, 网络地址转换；
+		mangle：拆解报文，做出修改，封装报文；
+		raw：关闭nat表上启用的连接追踪机制；
+
+	链（内置）：
+		PREROUTING
+		INPUT
+		FORWARD
+		OUTPUT
+		POSTROUTING
+
+	流入：PREROUTING --> INPUT
+	流出：OUTPUT --> POSTROUTING
+	转发：PREROUTING --> FORWARD --> POSTROUTING
+
+	各功能的分别实现：
+		filter：INPUT, FORWARD, OUTPUT
+		nat: PREROUTING(DNAT), OUTPUT, POSTROUTING(SNAT)
+		mangle：PREROUTING, INPUT, FORWARD, OUTPUT, POSTROUTING
+		raw：PREROUTING, OUTPUT
+
+	路由发生的时刻：
+		报文进入本机后：
+			判断目标主机；
+		报文发出之前：
+			判断经由哪个接口送往下一跳；
+
+	iptables：四表五链
+		添加规则时的考量点：
+			(1) 要实现哪种功能：判断添加在哪张表上；
+			(2) 报文流经的路径：判断添加在哪个链上；
+
+		链：链上规则的次序，即为检查的次序；因此隐含一定的法则
+			(1) 同类规则(访问同一应用)，匹配范围小的放上面；
+			(2) 不同类规则(访问不同应用)，匹配到报文频率较大的放上面；
+			(3) 将那些可由一条规则描述的多个规则合并为一个；
+			(4) 设置默认策略；
+
+		功能的优先级次序：raw --> mangle --> nat --> filter
+
+	规则：
+		组成部分：报文的匹配条件，匹配到之后处理动作
+			匹配条件：根据协议报文特征指定
+				基本匹配条件
+				扩展匹配条件
+			处理动作：
+				内建处理机制
+				自定义处理机制
+
+			注意：报文不会经过自定义链，只能在内置链上通过规则进行引用后生效；
+
+	iptables：规则管理工具
+		添加、修改、删除、显示等；
+
+		规则和链有计数器：
+			pkts：由规则或链所匹配到的报文的个数；
+			bytes：由规则或链匹配到的所有报文大小之和；

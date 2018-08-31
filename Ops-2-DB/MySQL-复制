@@ -1,0 +1,143 @@
+MySQL复制：
+
+	扩展方式：
+		scale on: 向上扩展，垂直扩展
+		scale out：向外扩展，水平扩展
+
+		1，4G：50 concurrent
+		2*8=16, 32G , 300
+
+  MySQL的扩展
+    复制：每个节点都有相同的数据集
+        向外扩展；
+        二进制日志
+        单向
+
+  复制的功能：
+    数据分布
+    负载均衡读
+    备份
+    高可用和故障切换
+    MySQL升级测试
+
+  主从复制：
+    SLAVE: （从节点）
+			IO thread: 向主服务请求二进制日志中的事件
+			SQL thread：从中继日志读取事件并在本地执行
+
+    MASTER:
+      binlog dump: 将IO thread请求的事件发送给对方；
+
+    特点：
+      1、异步复制
+      2、主从数据不一致比较常见
+
+    复制架构：
+      一主多从：
+			从服务器：有且只能有一个主服务器；
+				MariaDB-10：支持多主模型，多源复制(multi-source replication)
+
+
+    二进制日志事件记录格式：
+  		statement
+  		row
+  		mixed
+
+演示的模型：
+    主从、主主、半同步复制、复制过滤器
+
+		读写分离：主从模型下，让前端分发器能识别读/写，并且按需调度至目标主机；
+			amoeba:
+			mysql-proxy：
+
+		双主：master-master
+			1、必须设定双方的自动增长属性，以避免冲突
+				auto_increment_increment=#
+					定义自动增长字段起始值
+				auto_increment_offset=2
+					步长
+			2、数据不一致；
+				Age, Salary
+
+				A： update t1 set Salary=salary+1000 WHERE Age>=30;
+				B:  update t1 set Age=Age-3 WHERE Salary < 3000;
+
+			功能：均衡读请求；写请求双方一样；
+
+示例：简单主从复制的配置
+
+	版本
+		1、双方的MySQL要一致；
+		2、如果不一致：主的要低于从的；
+
+	从哪儿开始复制：
+		1、都从0开始：
+		2、主服务器已经运行一段时间，并且存在不小的数据集：
+			把主服务器备份，然后在从服务恢复，从主服务器上备份时所处的位置开始复制；
+
+	配置过程：
+		主服务器：
+			1、启用二进制日志
+					[mysqld]
+					log_bin=mysql-bin
+			2、为当前节点设置一个全局唯一的ID server-id
+					[mysqld]
+					server_id=#     			#是数字 {0-2^32}
+			3、创建有复制权限的帐号
+	          REPLICATION SLAVE, REPLICATION CLIENT
+
+						mysql> GRANT REPLICATION SLAVE, REPLICATION CLIENT ON *.* TO 'repluser'@'hostname' IDENTIFIED BY 'repluser_pass';
+						mysql> FLUSH PRIVILEGES;
+
+		从服务器：
+			1、启用中继日志
+				[mysqld]
+				relay_log=relay-log
+				relay_log_index=relay-log.index
+			2、改server-id
+				[mysqld]
+				server_id=#
+			3、使用有复制权限的用户账号连接主服务器，并启动复制线程
+				mysql> CHANGE MASTER TO MASTER_HOST='', MASTER_USER='', MASTER_PASSWORD='', MASTER_LOG_FILE='mysql-bin.xxx', MASTER_LOG_POS=#;
+				mysql> START SLAVE;
+
+
+	复制架构中应该注意的问题：
+		1.限制从服务器为只读
+				在从服务器上设置read_only=ON;此限制对拥有SUPER权限的
+
+				阻止所有用户：
+					mysql> FLUSH TABLES WITH READ LOCK;
+
+		2.如何保证主从复制时的事务安全？
+				在master节点启用参数：
+						sync_binlog=ON
+
+				如果用到的为InnoDB存储引擎：
+						innodb_flush_log_at_trx_commit=ON
+						innodb_support_xa=ON
+
+				在slave节点：
+						skip_slave_start=ON
+
+			 master 节点：
+			 			sync_relay_log
+						sync_relay_log_info
+
+主主复制
+		互为主从：
+				1、数据不一致；因此，慎用。
+				2、自动增长ID：
+						配置一个节点使用奇数id
+								auto_increment_offset=1
+								auto_increment_increment=2
+						另一个节点使用偶数id
+								auto_increment_offset=2
+								auto_increment_increment=2
+
+		配置步骤：
+				1、各节点使用一个唯一的server_id：
+				2、都启动binary log和relay log；
+				3、创建拥有复制权限的用户账号；
+				4、定义自动增长id字段的数值范围为久
+				5、均把对方指定为主节点，并启动复制线程；

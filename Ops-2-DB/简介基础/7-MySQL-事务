@@ -1,0 +1,87 @@
+MySQL事务：Transaction
+
+	事务就是一组原子性的查询语句，或者说将多个查询当作一个独立的工作单元。
+
+      事务日志：用于失败后恢复操作
+
+	ACID测试：能满足ACID测试就表示其支持事务，或兼容事务。
+		A：Atomicity，原子性:整个事务中的所有操作要么全部执行成功，要么全部失败后回滚。
+		C：Consistency, 一致性：数据库总是从一个一致性状态装换为另一个一致性状态。
+		I: Isolation, 隔离性, 一个事务的所有修改操作在提交之前对其它事务是不可见的。隔离有多种级别。
+			Tom: 7000-3000
+			Jerry: 5000+3000
+		D：Durability, 持久性, 一旦事务得到提交，其所做的修改会永久保存于数据库中。
+
+	跟事务相关的常用命令
+		mysql> START TRANSACTION #启动事务
+						...
+						...
+		mysql> COMMIT 提交   结束事务(1)
+
+		mysql> ROLLBACK 回滚   结束事务(2)
+
+    注意： 只有事务型存储引擎才能支持此操作
+
+    建议： 显式请求和提交事务，而不要使用“自动提交(autocommit)”
+        autocommit={1|0}
+
+        如果没有显式启动事务，每个语句都会当作一个独立的事务，其执行完成后会被自动提交；
+      		mysql> SELECT @@global.autocommit;
+      		mysql> SET GLOBAL autocommit = 0;
+
+      		关闭自动提交，请记得手动启动事务，手动进行提交；
+
+		事务支持savepoint
+					mysql> SAVEPOINT identifier  #存档 名为identifier
+					mysql> ROLLBACK [WORK] TO [SAVEPOINT] identifier #回滚到某个存档
+					mysql> RELEASE SAVEPOINT identifier #删除这个存档
+
+		事务隔离级别：
+				READ-UNCOMMITTED (读未提交)
+					脏读，不可重读，幻读
+				READ-COMMITTED (读提交)
+					不可重读，幻读
+				REPEATABLE-READ (可重读)
+					幻读
+				SERIALIZABLE (可串行化)
+					强制事务的串行执行避免了幻读；但会引起加锁读。
+
+				可能存在的问题
+					脏读：读别人未提交的数据
+					不可重读：两次读到不一样的数据
+					幻读：读到的数据一样，即使之后修改过还是读之前的
+					加锁读
+
+				tx_isolation：服务器变量，默认为REPEATABLE-READ;可在SESSION级进行修改
+
+
+				查看和修改MySQL的事务隔离级别
+					mysql> SHOW GLOBAL VARIABLES LIKE 'tx_isolation';
+					mysql> SELECT @@global.tx_isolation;
+					mysql> SET tx_isolation='READ-UNCOMMITTED'; 修改
+
+
+				建议：对事务要求不特别严格的场景下，可以使用读提交；
+
+				MVCC：多版本并发控制
+					每个事务启动时，InnoDB为会每个启动的事务提供一个当下时刻的快照；
+						为了实现此功能，InnoDB会为每个表提供两隐藏的字段，一个用于保存行的创建时间，一个用于保存行的失效时间；
+							里面存储的是系统版本号；（system version number）
+
+					只在两个隔离级别下有效：READ COMMITTED和REPEATABLE READ
+
+		死锁：
+				两个或多个事务在同一资源相互占用，并请求锁定对方占用资源的状态；
+
+		事务日志：
+				事务日志的写入类型未“追加”，因此其操作为“顺序IO”，此日志通常被称为"预写式日志(write ahead logging)";
+				文件： ib_logfile0 5M
+						 	ib_logfile1 5M
+
+						MariaDB [(none)]> SHOW GLOBAL VARIABLES LIKE 'innodb%';
+								innodb_log_file_size
+								innodb_log_files_in_group
+							  innodb_log_group_home_dir
+
+								这三个不支持运行时修改 关闭数据库改配置文件重启数据库
+								建议不要使用太大的事务日志

@@ -1,0 +1,95 @@
+vsftp
+
+安装
+  yum -y install vsftpd
+
+配置文件
+    /etc/vsftpd/vsftpd.conf #主配置文件
+
+    /etc/pam.d/vsftpd #基于pam的vsftp验证配置文件
+    /etc/vsftpd/ftpusers #默认vsftpd黑名单
+    /etc/vsftpd/user_list #通过配置文件设置黑名单或白名单
+    /etc/logrotate.d/vsftpd #日志轮转配置文件
+
+    /var/ftp #默认 vsftp共享目录 #匿名用户
+
+    #配置行不能跟任何空格或空白字符(行前) #也不要在配置行后注释东西
+
+匿名用户配置
+    anonymous_enable=YES #
+    anon_upload_enable=NO #上传
+    anon_mkdir_write_enable=NO #创建
+    anon_other_write_enable=NO #删除等操作
+
+    anon_max_rate=0 #匿名用户传输速率 B/s
+    anon_umask=077 #权限掩码
+
+系统用户配置
+    local_enable=YES #
+    write_enable=YES #是否允许写操作 全局
+    local_umask=022 #创建文件的掩码
+    chroot_local_user=YES #禁锢所有本地账号 锁定在其家目录中
+    chroot_list_enable=YES ##禁锢列表内本地账号 锁定在其家目录中
+      chroot_list_file=/etc/vsftpd/chroot_list #锁定列表中的用户
+    local_max_rate=0 #传输速率 B/s
+    dirmessage_enable=YES
+      #用户目录创建 .message文件  登录时会发送文件内容
+
+全局配置
+    xferlog_enable=YES #开启日志功能
+    xferlog_std_format=YES #使用标准日志格式
+    xferlog_file=/var/log/xferlog #日志文件
+
+    chown_uploads=YES #改变上传文件的属主
+    chown_username=whoever #
+
+    ftpd_banner=Welcome to blah FTP service. #登录时显示信息
+    pam_service_name=vsftpd #使用pam认证时用到的文件/etc/pam.d/vsftpd
+    userlist_enable=YES #启用userlist用户列表 NO则为黑名单
+        #userlist文件路径  /etc/vsftpd/user_list
+    userlist_deny=YES #禁用userlist用户访问
+
+    max_clients=2000 #最大并发连接数 0不限制
+    max_per_ip=0 #每个ip可发起的并发数 0不限制
+
+    guest_enable=YES #所有非匿名用户都映射为guest
+    guest_username=vuser #设置来宾账户
+
+虚拟用户认证
+
+    一 用户账号存储在文件
+
+        1.创建虚拟用户数据库
+          #奇数行为用户名 偶数行密码
+          #文件需要编码为hash格式(数据库格式) 每次修改都要重新编码
+          # yum -y install libdb-utils  #db_load工具可通过安装它获得
+
+          vim /etc/vsftpd/vlogin
+              tom
+              123456
+              jerry
+              123456
+          db_load -T -t hash -f /etc/vsftpd/vlogin /etc/vsftpd/vlogin.db
+              #转换格式
+          chmod 660 /etc/vsftpd/vlogin /etc/vsftpd/vlogin.db
+              #该权限增强安全性
+        2.创建pam文件,设置基于虚拟账户验证
+          vim /etc/pam.d/vsftpd.pam
+              auth required /lib64/security/pam_userdb.so db=/etc/vsftpd/vlogin
+              account required /lib64/security/pam_userdb.so db=/etc/vsftpd/vlogin
+        3.设置虚拟账户共享目录
+          useradd -s /sbin/nologin -d /home/ftp vuser #创建要映射的虚拟用户
+          cp /etc/redhat-release /home/ftp/ #用户测试
+        4.修改配置文件
+          vim /etc/vsftpd/vsftpd.conf
+              pam_service_name=vsftpd.pam #虚拟用户认证文件 修改后系统用户将无法登陆
+              guest_enable=YES #所有非匿名用户都映射为guest
+              guest_username=vuser #设置来宾账户
+              user_config_dir=/etc/vsftp_user_conf #为每个用户独立配置
+              user_sub_token=$USER #
+        5.为虚拟用户设置独立路径
+          mkdir /etc/vsftpd_user_conf
+          mkdir -p /home/ftp/tom
+          vim /etc/vsftpd_user_conf/tom
+              local_root=/home/ftp/$USER
+        6.service vsftpd restart

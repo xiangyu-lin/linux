@@ -1,0 +1,62 @@
+lvs：
+
+  章文嵩: 正明;  #花名 段正明  #研发者
+  lvs: Linux Virtual Server
+
+  l4: 四层交换，四层路由；
+    根据请求报文的目标IP和PORT将其转发至后端主机集群中的某一台主机(根据挑选算法)；
+
+    netfilter：
+      PREROUTING --> INPUT
+      PREROUTING --> FORWARD --> POSTROUTING
+      OUTPUT --> POSTROUTING
+
+  lvs:
+    ipvsadm/ipvs
+
+    ipvsadm: 用户空间的命令行工具，用于管理集群服务；
+    ipvs: 工作内核中netfilter INPUT钩子上；  #IP Virtual Server
+
+    支持TCP, UDP, AH, EST, AH_EST, SCTP等诸多协议；
+
+  lvs arch：
+    调度器：director, dispatcher, balancer #各种称呼 导演 分发器 负载均衡器
+    RS: Real Server #真正提供服务的机器
+
+    Client IP: CIP  					#客户端ip
+    Director Virutal IP: VIP  #调度器虚拟ip
+    Director IP: DIP					#调度器ip
+    Real Server IP: RIP				#各real server 的 ip
+
+  lvs type:  #lvs 架构类型
+    lvs-nat
+    lvs-dr(direct routing)    #直接路由
+    lvs-tun(ip tunneling)		  #ip 隧道
+    lvs-fullnat								#
+
+    lvs-nat:
+      多目标的DNAT(iptables)；它通过修改请求报文的目标IP地址(同时可能会修改目标端口)至挑选出某RS的RIP地址实现转发；
+
+      (1) RS应该和DIP应该使用私网地址，且RS的网关要指向DIP；
+      (2) 请求和响应报文都要经由director转发；极高负载的场景中，director可能会成为系统瓶颈；
+      (3) 支持端口映射；
+      (4) RS可以使用任意OS；
+      (5) RS的RIP和Director的DIP必须在同一IP网络；
+      #vip 和dip不能在同一个网段
+
+    lvs-dr: direct routing
+      它通过修改请求报文的目标MAC地址进行转发；
+        Director: VIP, DIP
+        RSs: RIP, VIP
+
+      (1) 保证前端路由器将目标IP为VIP的请求报文发送给director;
+        解决方案：
+          静态绑定
+          arptables
+          修改RS主机内核的参数
+      (2) RS的RIP可以使用私有地址；但也可以使用公网地址；
+      (3) RS跟Director必须在同一物理网络中；
+      (4) 请求报文经由Director调度，但响应报文一定不能经由Director；
+      (5) 不支持端口映射；
+      (6) RS可以大多数OS；
+      (7) RS的网关不能指向DIP；

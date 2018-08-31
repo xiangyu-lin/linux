@@ -1,0 +1,100 @@
+创建挂载文件系统和交换分区
+> mkfs mke2fs mkswap mount umount swapon swapoff
+
+创建文件系统和交换分区
+    mkfs：
+    	1. # mkfs.FS_TYPE /dev/DEVICE
+    		    ext4 | xfs | btrfs | vfat
+    	2. # mkfs -t FS_TYPE /dev/DEVICE
+    		    -L 'LABEL': 设定卷标
+
+    mke2fs：ext系列文件系统专用管理工具
+    		mke2fs
+    			-t 	{ext2|ext3|ext4}
+    			-b	{1024|2048|4096}
+    			-L 	'LABEL'
+    			-j	 相当于 -t ext3
+    					mkfs.ext3 = mkfs -t ext3 = mke2fs -j = mke2fs -t ext3
+    			-i # 为数据空间中每多少个字节创建一个inode；此大小不应该小于block的大小；
+    			-N # 为数据空间创建个多少个inode；
+    			-m # 为管理人员预留的空间占据的百分比；
+    			-O 	FEATURE[,...]：启用指定特性
+    					-O ^FEATURE：关闭指定特性
+
+    mkswap：创建交换分区
+    		mkswap [options] device
+    				-L 'LABEL'
+    		前提：调整其分区的ID为82；
+
+挂载卸载文件系统和交换分区
+    # mount：通过查看/etc/mtab文件显示当前系统已挂载的所有设备
+  	umount  #卸载
+      	# umount DEVICE
+      	# umount MOUNT_POINT
+
+    mount   #挂载
+        # mount DEVICE MOUNT_POINT
+
+		mount [-fnrsvw] [-t vfstype] [-o options] device dir
+        device：指明要挂载的设备；
+    				(1) 设备文件：例如/dev/sda5
+    				(2) 卷标：-L 'LABEL', 例如 -L 'MYDATA'
+    				(3) UUID, -U 'UUID'：例如 -U '0c50523c-43f1-45e7-85c0-a126711d406e'
+    				(4) 伪文件系统名称：proc, sysfs, devtmpfs, configfs
+
+        dir：挂载点
+    				事先存在；建议使用空目录；
+    				进程正在使用中的设备无法被卸载；
+
+        常用命令选项：
+            -t vsftype：指定要挂载的设备上的文件系统类型；
+            -r: readonly，只读挂载；
+            -w: read and write, 读写挂载；
+            -n: 不更新/etc/mtab；
+            -a：自动挂载所有支持自动挂载的设备；(定义在了/etc/fstab文件中，且挂载选项中有“自动挂载”功能)
+            -L 'LABEL': 以卷标指定挂载设备；
+            -U 'UUID': 以UUID指定要挂载的设备；
+            -B, --bind: 绑定目录到另一个目录上；
+
+			  注意：查看内核追踪到的已挂载的所有设备：cat /proc/mounts
+
+        -o options：(挂载文件系统的选项)
+            async：异步模式；
+            sync：同步模式；
+            atime/noatime：包含目录和文件；
+            diratime/nodiratime：目录的访问时间戳
+            auto/noauto：是否支持自动挂载
+            exec/noexec：是否支持将文件系统上应用程序运行为进程
+            dev/nodev：是否支持在此文件系统上使用设备文件；
+            suid/nosuid：
+            remount：重新挂载
+            ro：
+            rw:
+            user/nouser：是否允许普通用户挂载此设备
+            acl：启用此文件系统上的acl功能
+
+            注意：上述选项可多个同时使用，彼此使用逗号分隔；
+            	  默认挂载选项：defaults
+            	  		rw, suid, dev, exec, auto, nouser, and async
+    挂载交换分区
+        启用：swapon
+        	swapon [OPTION]... [DEVICE]
+        		-a：激活所有的交换分区；
+        		-p PRIORITY：指定优先级；
+        禁用：
+        	 swapoff [OPTION]... [DEVICE]
+
+文件挂载的配置文件：/etc/fstab
+    每行定义一个要挂载的文件系统；
+  	要挂载的设备或伪文件系统 	挂载点 	文件系统类型  	挂载选项 	转储频率  	自检次序`
+  	1. 要挂载的设备或伪文件系统：
+  		设备文件、LABEL(LABEL="")、UUID(UUID="")、伪文件系统名称(proc, sysfs)
+  	2. 挂载选项：
+  		> - defaults
+  	3. 转储频率：
+  		> - 0：不做备份
+  		> - 1：每天转储
+  		> -	2：每隔一天转储
+  			自检次序：
+  				0：不自检
+  				1：首先自检；一般只有rootfs才用1；

@@ -1,0 +1,95 @@
+iptables命令：
+
+     iptables [-t table] {-A|-D} chain rule-specification
+
+     iptables [-t table] -I chain [rulenum] rule-specification
+
+     iptables [-t table] -R chain rulenum rule-specification
+
+     iptables [-t table] -D chain rulenum
+
+     iptables [-t table] -S [chain [rulenum]]
+
+     iptables [-t table] {-F|-L|-Z} [chain [rulenum]] [options...]
+
+     iptables [-t table] -N chain
+
+     iptables [-t table] -X [chain]
+
+     iptables [-t table] -P chain target
+
+     iptables [-t table] -E old-chain-name new-chain-name
+
+
+     -t table： 省略时为filter
+        filter, nat, mangle, raw
+
+      链管理：
+        -F：flush，清空规则链；省略链，表示清空指定表上的所有的链；
+        -N：new, 创建新的自定义规则链；
+        -X：drop, 删除用户自定义的空的规则链；
+        -Z：zero，清零，置零规则计数器；
+        -P：Policy，为指定链设置默认策略；对filter表中的链而言，默认策略通常有ACCEPT, DROP, REJECT;
+        -E: rEname，重命令自定义链；引用计数不为0的自定义链，无法改名，也无法删除；
+      规则管理：
+        -A：append，将新规则追加于指定链的尾部；
+        -I：insert，将新规则插入至指定链的指定位置；
+        -D：delete，删除指定链上的指定规则；
+          有两种指定方式：
+            (1) 指定匹配条件；
+            (2) 指定规则编号；
+        -R：replace，替换指定链上的指定规则；
+      查看：
+        -L：list，列出指定链上的所有规则；
+          -n: numberic，以数字格式显示地址和端口号；
+          -v: verbose，显示详细信息；
+            -vv, -vvv
+          --line-numbers：显示规则编号；
+          -x: exactly, 显示计数器计数结果的精确值；
+
+      匹配条件：
+        基本匹配：
+          [!] -s, --src, --source IP|Netaddr：检查报文中源IP地址是否符合此处指定的地址范围；
+          [!] -d, --dst, --destination IP|Netaddr：检查报文中源IP地址是否符合此处指定的地址范围；
+          -p, --protocol {tcp|udp|icmp}：检查报文中的协议，即ip首部中的protocols所标识的协议；
+          -i, --in-interface IFACE：数据报文的流入接口；仅能用于PREROUTING, INPUT及FORWARD链上；
+          -o, --out-interface IFACE：数据报文的流出接口；仅能用于FORWARD, OUTPUT及POSTROUTING链上；
+
+        扩展匹配：-m macth_name --spec_options
+            例如：-m tcp --dport 22
+
+          隐式扩展：对-p protocol指明的协议进行的扩展，可省略-m选项；
+            -p tcp
+              --dport PORT[-PORT]：目标端口，可以是单个端口或连续多个端口；
+              --sport PORT[-PORT]
+              --tcp-flags LIST1 LIST2：检查LIST1所指明的所有标志位，且这其中，LIST2所表示出的所有标记位必须为1，而余下的必须为0；没有LIST1中指明的，不作检查；
+                SYN, ACK, FIN, RST, PSH, URG
+
+                --tcp-flags SYN,ACK,FIN,RST SYN
+              --syn:
+            -p udp
+              --dport
+              --sport
+
+            -p icmp
+              --icmp-type
+                可用数字表示其类型：
+                  0：echo-reply
+                  8: echo-request
+
+          显式扩展: 必须使用-m选项指定使用的扩展；
+
+      目标：
+        -j TARGET：jump至指定的TARGET
+          ACCEPT: 接受
+          DROP: 丢弃
+          REJECT: 拒绝
+          RETURN: 返回调用链
+          REDIRECT：端口重定向
+          LOG: 记录日志
+          MARK：做防火墙标记
+          DNAT：目标地址转换
+          SNAT：源地址转换
+          MASQUERADE：地址伪装
+          ...
+          自定义链：由自定义链上的规则进行匹配检查

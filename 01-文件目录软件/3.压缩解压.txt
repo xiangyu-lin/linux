@@ -1,0 +1,111 @@
+## 压缩、解压缩及归档工具
+
+- compress/uncompress(.Z)
+- gzip/gunzip(.gz)
+- bzip2/bunzip2(.bz2)
+- xz/unxz(.xz)
+- tar
+- zip/unzip
+- dd, cpio
+
+**gzip/gunzip**
+
+压缩单个文件 一般是文本
+
+	gzip [OPTION]... FILE ...
+
+		-d: 解压缩，相当于gunzip
+		-c: 将结果输出至标准输出；
+		-#：1-9，指定压缩比；
+
+	zcat：不显式展开的前提下查看文本文件内容；
+
+**bzip2/bunzip2/bzcat**
+
+bzip2是一个基于Burrows-Wheeler 变换的无损压缩软件;能够把普通的数据文件压缩10%至15%
+
+	bzip2 [OPTION]... FILE ...
+
+	    -k: keep, 保留原文件；
+	    -d：解压缩
+	    -#：1-9，压缩比，默认为6；
+
+	bzcat：不显式展开的前提下查看文本文件内容；
+
+**xz/unxz/xzcat**
+
+xz是一种压缩文件格式，采用LZMA SDK压缩，目标文件较gzip压缩文件(.gz或·tgz)小30%，较·bz2小15%。
+
+	xz [OPTION]... FILE ...
+		-k: keep, 保留原文件；
+		-d：解压缩
+		-#：1-9，压缩比，默认为6；
+
+	xzcat: 不显式展开的前提下查看文本文件内容；
+
+**tar**
+
+	tar [OPTION]...
+
+1 创建归档
+
+    tar -c -f /PATH/TO/SOMEFILE.tar FILE...
+
+    tar -cf /PATH/TO/SOMEFILE.tar FILE...
+
+2 查看归档文件中的文件列表
+
+    tar -t -f /PATH/TO/SOMEFILE.tar
+
+3 展开归档
+
+	tar -x -f /PATH/TO/SOMEFILE.tar
+
+	tar -x -f /PATH/TO/SOMEFILE.tar -C /PATH/TO/DIR
+
+4 结合压缩工具实现：归档并压缩
+
+	-j: bzip2, -z: gzip, -J: xz
+
+**zip unzip**
+
+zip [option] 压缩文件名 需要压缩的文件列表
+
+	-r:递归压缩
+	-d:从压缩文件内删除指定文件
+	-u：更新文件到压缩文件中
+	-m:压缩后删除源文件
+	-F：尝试修复损坏的压缩文件
+	-T:检查压缩文件中每个文件是否准确无误
+	-#：压缩级别
+
+unzip [option] 压缩文件名
+
+	-x "list" ：解压文件 但不包含list指定的文件
+	-t 测试压缩文件有无损坏，但不解压
+	-v 查看详细信息，不解压
+	-n 解压时不覆盖已存在的文件，并且要求不确认
+	-o 覆盖，不要求确认
+	-d "目录名" :解压到指定目录
+
+**dd**
+
+	dd if="input_file" of="outout_file" bs="block_size" count="number"
+
+	if:输入文件
+	of:输出文件
+	bs:block，没指定默认512字节
+	count：bs的数量
+
+**cpio**
+
+	cpio [option] > file|dev
+	cpio [option] < file|dev
+
+    -o 将文件复制、打包成文件或将文件输出到设备上
+    -i 将打包文件解压或将设备上的备份还原到系统中
+    -t 查看cpio打包文件中的内容或者输出到设备上的文件内容
+    -v 显示过程
+    -d 还原文件是 自动创建相应目录
+    -c 一种较新的存储方式
+    -B 让默认块大小增加到5120字节 加快存取速度

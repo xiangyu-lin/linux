@@ -1,0 +1,109 @@
+编译安装mariadb
+
+    groupadd -r -g 306 mysql
+    useradd -r -g 306 -u 306 mysql
+
+    fsidk
+    n
+    t 8e
+    partx -a /dev/...
+    pv create /dev/...
+    vgcreate myvg /dev/..
+    lvcreate -L 10G -n mydata myvg
+    mke2fs -t ext4 /dev/myvg/mydata
+    vim /etc/fstab
+        /dev/myvg/mydata  /mydata   ext4 defaults 0 0
+    mount -a
+    mount
+    mkdir -v /mydata/data
+    chown mysql.mysql /mydata/data
+
+    wget http...
+    tar xf mari...
+    cd mari...
+    cmake . -DCMAKE_INSTALL_PREFIX=....
+    make && make install
+    chown -R root.mysql ./*
+    ln -sv mariadb-5.5.44 mysql
+    cd mysql
+    scripts/mysql_install_db --user=mysql --datadir=/mydata/data/
+    mkdir /etc/mysql
+    cp support-files/my-large.cnf /etc/mysql/my.cnf
+    vim  /etc/mysql/my.cnf #必填
+        datadir = /mydata/data
+        innodb_file_per_table = ON
+        skip_name_resolve = ON
+    cp support-files/mysql.server /etc/rc.d/init.d/mysqld
+    chmod +x /etc/rc.d/init.d/mysqld
+    chkconfig --add mysqld #开机自启
+    /usr/local/mysql/bin/mysql_secure_installation
+
+---
+CentOS7 编译安装mariadb
+
+    rpm -qa | grep mariadb
+    yum remove mariadb
+    yum groupinstall "Development Tools" -y
+    yum -y install ncurses-devel openssl-devel libevent-devel jemalloc-devel cmake
+    wget http://...
+    tar xf mariadb-...
+
+    cd maridb...
+    cmake . -DCMAKE_INSTALL_PREFIX=/usr/local/maridb-5.5.44 -DMYSQL_DATADIR=/mydata/mysql -DSYSCONFDIR=/etc -DWITH_INNOBASE_STORAGE_ENGINE=1 -DWITH_ARCHIVE_STORAGE_ENGINE=1 -DWITH_BLACKHOLE_STORAGE_ENGINE=1 -DWITH_READLINE=1 -DWITH_SSL=system -DWITH_ZLIB=system -DWITH_LIBWRAP=0 -DMYSQL_UNIX_ADDR=/tmp/mysql.sock -DDEFAULT_CHARSET=utf8 -DDEFAULT_COLLATION=utf8_general_ci
+    make && make install
+    vim /usr/lib/systemd/system/mariadb.service     #unit file
+    systemctl daemon-reload #识别unit file
+
+    ---
+    rpm包的下载位置：
+        http://mirrors.opencas.cn/mariadb-5.5.46/yum/
+
+---
+centos 6
+
+    yum -y install cmake ncurses-devel
+    #yum groupinstall "Development Tools" -y
+
+    wget https://downloads.mariadb.org/interstitial/mariadb-5.5.60/source/mariadb-5.5.60.tar.gz
+    tar xvf mariadb-5.5.60.tar.gz
+    cd cd mariadb-5.5.60
+
+    cmake . -DCMAKE_INSTALL_PREFIX=/usr/local/mysql \
+    -DMYSQL_DATADIR=/mydata/data \
+    -DWITH_INNOBASE_STORAGE_ENGINE=1 \
+    -DWITH_ARCHIVE_STORAGE_ENGINE=1 \
+    -DWITH_BLACKHOLE_STORAGE_ENGINE=1 \
+    -DWITH_READLINE=1 \
+    -DWITH_SSL=system \
+    -DWITH_ZLIB=system \
+    -DWITH_LIBWRAP=0 \
+    -DMYSQL_UNIX_ADDR=/tmp/mysql.sock \
+    -DDEFAULT_CHARSET=utf8 \
+    -DDEFAULT_COLLATION=utf8_general_ci
+
+    cp support-files/my-large.cnf /etc/mysql/my.cnf
+    vim  /etc/mysql/my.cnf #必填
+        datadir = /mydata/data
+        innodb_file_per_table = ON
+        skip_name_resolve = ON
+    cp support-files/mysql.server /etc/rc.d/init.d/mysqld
+    chmod +x /etc/rc.d/init.d/mysqld
+    chkconfig --add mysqld #开机自启
+    /usr/local/mysql/bin/mysql_secure_installation
+
+    ---
+	遇到的问题
+
+    remove CMakeCache.txt and rerun cmake.On Debian/Ubuntu, package name is libncurses5-dev, on Redhat and derivates it is ncurses-devel.
+
+    # yum -y install ncurses-devel
+    # rm CMakeCache.txt
+
+
+    CMake Warning:
+      Manually-specified variables were not used by the project:
+
+        SYSCONFDIR
+
+    # rm CMakeCache.txt
+    # -DSYSCONFDIR=/etc \ #这个去掉

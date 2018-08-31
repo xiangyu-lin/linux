@@ -1,0 +1,90 @@
+
+MySQL查询缓存
+
+	用于保存MySQL查询语句返回的完整结果。被命中时，MySQL会立即返回结果，省去解析、优化和执行等阶段。
+
+	如何判断是否命中：
+		通过查询语句的哈希值判断： 哈希值考虑的因素包括
+			查询本身、要查询的数据库、客户端使用的协议版本,...
+
+			查询语句任何字符上的不同,都会导致缓存不能命中
+
+	如何检查缓存？
+		MySQL保存结果于缓存中：
+			把SELECT语句本身做hash计算，计算的结果作为key，查询结果作为value
+
+	什么样的语句不会被缓存？
+		如果查询中包含用户自定义函数、存储函数、用户变量、临时表、mysql库中系统表、或者任何包含权限的表，一般都不会缓存；
+		查询语句中有一些不确定数据时，不会缓存：例如NOW(), CURRENT_TIME()；一般来说，
+
+	缓存会带来额外开销：
+		1、每个查询都得先检查是否命中；
+		2、查询结果要先缓存；
+
+	查询缓存相关的服务器变量
+		MariaDB [(none)]> SHOW GLOBAL VARIABLES LIKE 'query_cache%';
+		+------------------------------+----------+
+		| Variable_name                | Value    |
+		+------------------------------+----------+
+		| query_cache_limit            | 1048576  |
+		| query_cache_min_res_unit     | 4096     |
+		| query_cache_size             | 16777216 |
+		| query_cache_strip_comments   | OFF      |
+		| query_cache_type             | ON       |
+		| query_cache_wlock_invalidate | OFF      |
+		+------------------------------+----------+
+
+		query_cache_type: 查询缓存类型；是否开启缓存功能，开启方式有三种{ON|OFF|DEMAND}；
+				DEMAND：意味着SELECT语句明确使用 SQL_CACHE 选项时才会缓存；
+
+		query_cache_size: 总空间，单位为字节，大小必须是1024的整数倍。
+				MySQL启动时，会一次分配并立即初始化这里指定大小的内存空间；这意味着，如果修改此大小，会清空缓存并重新初始化的。
+
+		query_cache_min_res_unit: 存储缓存的内存块最小分配单位；(query_cache_size-Qcache_free_memory)/Qcache_queries_in_cache能够获得一个理想的值。
+				较小的值会减少浪费，但会导致更频繁的内存分配操作；
+				较大的值会带来浪费，会导致碎片过多
+
+		query_cache_limit: 能够缓存的最大查询结果
+				单个缓存对象的最大值，超出时则不预缓存；手动使用SQL_NO_CACHE可以人为地避免尝试缓存返回结果超出此参数限定值的语句。
+				对于有着较大结果的查询语句，建议在SELECT中使用SQL_NO_CACHE
+
+		query_cache_wlock_invalidate: 如果某个表被其它用户连接锁住了，是否仍然从缓存中返回结果。OFF表示返回。ON表示不允许
+
+
+
+	如何判断命令率：（查询相关的状态变量）
+		MariaDB [hellodb]> SHOW GLOBAL STATUS LIKE 'Qcache%';
+		+-------------------------+----------+
+		| Variable_name           | Value    |
+		+-------------------------+----------+
+		| Qcache_free_blocks      | 1        |
+		| Qcache_free_memory      | 16757008 |
+		| Qcache_hits             | 4        |
+		| Qcache_inserts          | 2        |
+		| Qcache_lowmem_prunes    | 0        |
+		| Qcache_not_cached       | 18       |
+		| Qcache_queries_in_cache | 2        |
+		| Qcache_total_blocks     | 6        |
+		+-------------------------+----------+
+
+		碎片整理：FLUSH QUERY_CACHE
+		清空缓存：RESET QUERY_CACHE
+
+		计算命中率：
+			MariaDB [hellodb]> SHOW GLOBAL STATUS WHERE Variable_name='Qcache_hits' OR Variable_name='Com_select';
+			+---------------+-------+
+			| Variable_name | Value |
+			+---------------+-------+
+			| Com_select    | 24    |
+			| Qcache_hits   | 4     |
+			+---------------+-------+
+
+			Qcache_hits/(Com_select+Qcache_hits)
+
+			也应该参考另外一个指标：命中和写入的比率，即Qcache_hits/Qcache_inserts的值，此比值如果能大于3:1，则表明缓存也是有效的。能达到10:1，为比较理想的情况。
+
+	缓存优化使用思路：
+		1、批量写入而非多次单个写入；
+		2、缓存空间不宜过大，因为大量缓存同时失效时会导致服务器假死；
+		3、必要时，使用SQL_CACHE和SQL_N0_CACHE手动控制缓存；
+		4、对写密集型的应用场景来说，禁用缓存反而能提高性能；

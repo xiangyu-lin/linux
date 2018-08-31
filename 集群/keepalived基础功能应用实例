@@ -1,0 +1,22 @@
+keepalivedMaster 192.168.112.123
+keepalivedBackup 192.168.112.252   虚拟ip地址192.168.112.61
+
+
+暂存
+vrrp_sync_group G1 {
+    group {
+      VI_1
+      VI_2
+      VI_3
+    }
+    notify_backup "/usr/local/bin/vrrp.back arg1 arg2"
+    notify_master "/usr/local/bin/vrrp.mast arg1 arg2"
+    notify_fault "/usr/local/bin/vrrp.fault arg1 arg2"
+}
+
+vrrp_sync_group G2 {
+    group {
+    VI_3
+    VI_4
+    }
+}
