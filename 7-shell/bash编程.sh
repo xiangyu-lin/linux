@@ -1,8 +1,6 @@
 bash脚本编程
 
----
-
-基础
+基础简介
 
 	bash提供了编程环境
 
@@ -85,7 +83,6 @@ bash脚本编程
 
 			函数：结构化编程及代码重用；
 				function
----
 
 变量
 
@@ -190,8 +187,6 @@ bash脚本编程
 		2. 只能使用数字、字母及下划线，且不能以数字开头；
 		3. 见名知义，
 
----
-
 条件测试
 	判断某需求是否满足，需要由测试机制来实现。
 	专用的测试表达式需要由测试命令辅助完成测试过程。
@@ -287,8 +282,6 @@ bash脚本编程
 
 			注：必须使用测试命令进行
 
----
-
 bash脚本编程之用户交互
 
 	read [option]... [name ...]
@@ -331,7 +324,6 @@ bash脚本编程之用户交互
 				    echo "Wrong disk special file."
 				    exit 2
 			fi
----
 
 if语句
 	CONDITION:
@@ -396,8 +388,6 @@ if语句
 
 	注意：if语句可嵌套
 
----
-
 case语句
 	条件判断case语句（相当于简化版的if语句）（PAT不支持正则，但支持glob）
 		case 变量引用 in
@@ -449,8 +439,6 @@ case语句
 					exit 0
 					;;
 				esac
-
----
 
 for循环
 
@@ -531,8 +519,6 @@ for循环
 		echo "LISTEN: $listen"
 		echo "Unkown: $other"
 
----
-
 while循环
 
 	while CONDITION; do
@@ -580,8 +566,6 @@ while循环
 
 		echo "Add $users users."
 
----
-
 until循环
 
 	until CONDITION; do
@@ -619,8 +603,6 @@ until循环
 		    let i=1
 		    let j++
 		done
-
----
 
 循环控制语句
 
@@ -663,8 +645,6 @@ until循环
 
 		echo "Even sum: $sum"
 
----
-
 创建死循环
 
 	创建死循环：
@@ -701,8 +681,6 @@ until循环
 
 			echo "$username logged on." >> /tmp/user.log
 
----
-
 while循环的特殊用法（遍历文件的每一行）
 
 	while read line; do
@@ -719,8 +697,6 @@ while循环的特殊用法（遍历文件的每一行）
 		                echo "uid: `echo $line | cut -d: -f3 `"
 		        fi
 		done < /etc/passwd
-
----
 
 for循环的特殊格式
 	for ((控制变量初始化;条件判断表达式;控制变量的修正表达式)); do
@@ -974,7 +950,6 @@ function:函数
 			}
 
 			fab 7
----
 
 function 数组 {
 		变量：存储单个元素的内存空间；

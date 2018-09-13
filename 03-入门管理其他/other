@@ -69,14 +69,7 @@ http://mirrors.163.com/centos/6.9/os/x86_64/images/install.img
 
 			mailx
 
-	sleep命令：
-		sleep NUMBER[SUFFIX]...
 
-			SUFFIX:
-				s: 秒, 默认
-				m: 分
-				h: 小时
-				d: 天
 
 # 删除某些无法删除的文件
 

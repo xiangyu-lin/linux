@@ -1,0 +1,81 @@
+## 数组
+
+变量：存储单个元素的内存空间；
+
+数组：存储多个元素的连续的内存空间；
+	数组名
+	索引：编号从0开始，属于数值索引；
+		注意：索引也可支持使用自定义的格式，而不仅仅是数值格式；
+			  bash的数组支持稀疏格式；
+
+引用数组中的元素：${ARRAY_NAME[INDEX]}
+
+声明数组：
+	declare -a ARRAY_NAME
+	declare -A ARRAY_NAME: 关联数组；
+
+数组元素的赋值：
+	(1) 一次只赋值一个元素；
+		ARRAY_NAME[INDEX]=VALUE
+			weekdays[0]="Sunday"
+			weekdays[4]="Thursday"
+	(2) 一次赋值全部元素：
+		ARRAY_NAME=("VAL1" "VAL2" "VAL3" ...)
+	(3) 只赋值特定元素：
+		ARRAY_NAME=([0]="VAL1" [3]="VAL2" ...)
+	(4) read -a ARRAY
+
+引用数组元素：${ARRAY_NAME[INDEX]}
+	注意：省略[INDEX]表示引用下标为0的元素；
+
+（#引用）数组的长度(数组中元素的个数)：${#ARRAY_NAME[*]}, ${#ARRAY_NAME[@]}
+
+	示例：生成10个随机数保存于数组中，并找出其最大值和最小值；
+		#!/bin/bash
+		#
+		declare -a rand
+		declare -i max=0
+
+		for i in {0..9}; do
+		    rand[$i]=$RANDOM
+		    echo ${rand[$i]}
+		    [ ${rand[$i]} -gt $max ] && max=${rand[$i]}
+		done
+
+		echo "Max: $max"
+
+	练习：写一个脚本
+		定义一个数组，数组中的元素是/var/log目录下所有以.log结尾的文件；要统计其下标为偶数的文件中的行数之和；
+
+			#!/bin/bash
+			#
+			declare -a files
+			files=(/var/log/*.log)
+			declare -i lines=0
+
+			for i in $(seq 0 $[${#files[*]}-1]); do
+			    if [ $[$i%2] -eq 0 ];then
+				let lines+=$(wc -l ${files[$i]} | cut -d' ' -f1)
+			    fi
+			done
+
+			echo "Lines: $lines."
+
+引用数组中的元素：
+	所有元素：${ARRAY[@]}, ${ARRAY[*]}
+
+	数组切片：${ARRAY[@]:offset:number}
+		offset: 要跳过的元素个数
+		number: 要取出的元素个数，取偏移量之后的所有元素：${ARRAY[@]:offset}；
+
+向数组中追加元素： #（如果0元素不存在 会赋值给[0]，并删除其他）
+	ARRAY[${#ARRAY[*]}]
+
+删除数组中的某元素：
+	unset ARRAY[INDEX]
+
+关联数组：
+	declare -A ARRAY_NAME
+	ARRAY_NAME=([index_name1]='val1' [index_name2]='val2' ...)
+
+练习：生成10个随机数，升序或降序排序

@@ -373,125 +373,125 @@ http-2.2 CentOS 6
 		实现：基于账号实现访问控制
           #ExtendedStatus On  #扩展状态信息
 
-  15、 curl命令
+	15、 curl命令
 
-  	curl是基于URL语法在命令行方式下工作的文件传输工具，它支持FTP, FTPS, HTTP, HTTPS, GOPHER, TELNET, DICT, FILE及LDAP等协议。curl支持HTTPS认证，并且支持HTTP的POST、PUT等方法， FTP上传， kerberos认证，HTTP上传，代理服务器， cookies， 用户名/密码认证， 下载文件断点续传，上载文件断点续传, http代理服务器管道（ proxy tunneling）， 甚至它还支持IPv6， socks5代理服务器,，通过http代理服务器上传文件到FTP服务器等等，功能十分强大。
+		curl是基于URL语法在命令行方式下工作的文件传输工具，它支持FTP, FTPS, HTTP, HTTPS, GOPHER, TELNET, DICT, FILE及LDAP等协议。curl支持HTTPS认证，并且支持HTTP的POST、PUT等方法， FTP上传， kerberos认证，HTTP上传，代理服务器， cookies， 用户名/密码认证， 下载文件断点续传，上载文件断点续传, http代理服务器管道（ proxy tunneling）， 甚至它还支持IPv6， socks5代理服务器,，通过http代理服务器上传文件到FTP服务器等等，功能十分强大。
 
-  	curl [options] [URL...]
+		curl [options] [URL...]
 
-  	curl的常用选项：
+		curl的常用选项：
 
-  	    -A/--user-agent <string> 设置用户代理发送给服务器
-  	    -basic 使用HTTP基本认证
-  	    --tcp-nodelay 使用TCP_NODELAY选项
-  	    -e/--referer <URL> 来源网址
-  	    --cacert <file> CA证书 (SSL)
-  	    --compressed 要求返回是压缩的格式
-  	    -H/--header <line>自定义首部信息传递给服务器
-  	    -I/--head 只显示响应报文首部信息
-  	    --limit-rate <rate> 设置传输速度
-  	    -u/--user <user[:password]>设置服务器的用户和密码
-  	    -0/--http1.0 使用HTTP 1.0
+		    -A/--user-agent <string> 设置用户代理发送给服务器
+		    -basic 使用HTTP基本认证
+		    --tcp-nodelay 使用TCP_NODELAY选项
+		    -e/--referer <URL> 来源网址
+		    --cacert <file> CA证书 (SSL)
+		    --compressed 要求返回是压缩的格式
+		    -H/--header <line>自定义首部信息传递给服务器
+		    -I/--head 只显示响应报文首部信息
+		    --limit-rate <rate> 设置传输速度
+		    -u/--user <user[:password]>设置服务器的用户和密码
+		    -0/--http1.0 使用HTTP 1.0
 
-  	用法：curl [options] [URL...]
+		用法：curl [options] [URL...]
 
-  	另一个工具：elinks
-  		elinks [OPTION]... [URL]...
-  			-dump: 不进入交互式模式，而直接将URL的内容输出至标准输出；
+		另一个工具：elinks
+			elinks [OPTION]... [URL]...
+				-dump: 不进入交互式模式，而直接将URL的内容输出至标准输出；
 
-  16 使用mod_deflate模块压缩页面优化传输速度
+	16 使用mod_deflate模块压缩页面优化传输速度
 
-  	适用场景：
-  		(1) 节约带宽，额外消耗CPU；同时，可能有些较老浏览器不支持；
-  		(2) 压缩适于压缩的资源，例如文本文件；
-
-
-  	SetOutputFilter DEFLATE
-
-  	# mod_deflate configuration
+		适用场景：
+			(1) 节约带宽，额外消耗CPU；同时，可能有些较老浏览器不支持；
+			(2) 压缩适于压缩的资源，例如文本文件；
 
 
-  	# Restrict compression to these MIME types
-  	AddOutputFilterByType DEFLATE text/plain
-  	AddOutputFilterByType DEFLATE text/html
-  	AddOutputFilterByType DEFLATE application/xhtml+xml
-  	AddOutputFilterByType DEFLATE text/xml
-  	AddOutputFilterByType DEFLATE application/xml
-  	AddOutputFilterByType DEFLATE application/x-javascript
-  	AddOutputFilterByType DEFLATE text/javascript
-  	AddOutputFilterByType DEFLATE text/css
+		SetOutputFilter DEFLATE
 
-  	# Level of compression (Highest 9 - Lowest 1)
-  	DeflateCompressionLevel 9
+		# mod_deflate configuration
 
-  	# Netscape 4.x has some problems.
-  	BrowserMatch ^Mozilla/4 gzip-only-text/html
 
-  	# Netscape 4.06-4.08 have some more problems
-  	BrowserMatch ^Mozilla/4\.0[678] no-gzip
+		# Restrict compression to these MIME types
+		AddOutputFilterByType DEFLATE text/plain
+		AddOutputFilterByType DEFLATE text/html
+		AddOutputFilterByType DEFLATE application/xhtml+xml
+		AddOutputFilterByType DEFLATE text/xml
+		AddOutputFilterByType DEFLATE application/xml
+		AddOutputFilterByType DEFLATE application/x-javascript
+		AddOutputFilterByType DEFLATE text/javascript
+		AddOutputFilterByType DEFLATE text/css
 
-  	# MSIE masquerades as Netscape, but it is fine
-  	BrowserMatch \bMSI[E] !no-gzip !gzip-only-text/html
+		# Level of compression (Highest 9 - Lowest 1)
+		DeflateCompressionLevel 9
 
-  17、https
+		# Netscape 4.x has some problems.
+		BrowserMatch ^Mozilla/4 gzip-only-text/html
 
-  	http over ssl = https 443/tcp
-  		ssl: v3
-  		tls: v1
+		# Netscape 4.06-4.08 have some more problems
+		BrowserMatch ^Mozilla/4\.0[678] no-gzip
 
-  		https://
+		# MSIE masquerades as Netscape, but it is fine
+		BrowserMatch \bMSI[E] !no-gzip !gzip-only-text/html
 
-  	SSL会话的简化过程
-  		(1) 客户端发送可供选择的加密方式，并向服务器请求证书；
-  		(2) 服务器端发送证书以及选定的加密方式给客户端；
-  		(3) 客户端取得证书并进行证书验正：
-  			如果信任给其发证书的CA：
-  				(a) 验正证书来源的合法性；用CA的公钥解密证书上数字签名；
-  				(b) 验正证书的内容的合法性：完整性验正
-  				(c) 检查证书的有效期限；
-  				(d) 检查证书是否被吊销；
-  				(e) 证书中拥有者的名字，与访问的目标主机要一致；
-  		(4) 客户端生成临时会话密钥（对称密钥），并使用服务器端的公钥加密此数据发送给服务器，完成密钥交换；
-  		(5) 服务用此密钥加密用户请求的资源，响应给客户端；
+	17、https
 
-  		注意：SSL会话是基于IP地址创建；所以单IP的主机上，仅可以使用一个https虚拟主机；
+		http over ssl = https 443/tcp
+			ssl: v3
+			tls: v1
 
-  	回顾几个术语：PKI，CA，CRL，X.509 (v1, v2, v3)
+			https://
 
-  	配置httpd支持https：
-  		(1) 为服务器申请数字证书；
-  			测试：通过私建CA发证书
-  				(a) 创建私有CA
-  				(b) 在服务器创建证书签署请求
-  				(c) CA签证
-  		(2) 配置httpd支持使用ssl，及使用的证书；
-  			# yum -y install mod_ssl
+		SSL会话的简化过程
+			(1) 客户端发送可供选择的加密方式，并向服务器请求证书；
+			(2) 服务器端发送证书以及选定的加密方式给客户端；
+			(3) 客户端取得证书并进行证书验正：
+				如果信任给其发证书的CA：
+					(a) 验正证书来源的合法性；用CA的公钥解密证书上数字签名；
+					(b) 验正证书的内容的合法性：完整性验正
+					(c) 检查证书的有效期限；
+					(d) 检查证书是否被吊销；
+					(e) 证书中拥有者的名字，与访问的目标主机要一致；
+			(4) 客户端生成临时会话密钥（对称密钥），并使用服务器端的公钥加密此数据发送给服务器，完成密钥交换；
+			(5) 服务用此密钥加密用户请求的资源，响应给客户端；
 
-  			配置文件：/etc/httpd/conf.d/ssl.conf
-  				<VirtualHost _default_:443> #默认的443
+			注意：SSL会话是基于IP地址创建；所以单IP的主机上，仅可以使用一个https虚拟主机；
 
-  				DocumentRoot
-  				ServerName
-  				SSLCertificateFile
-  				SSLCertificateKeyFile
-  		(3) 测试基于https访问相应的主机；
-  			# openssl s_client [-connect host:port] [-cert filename] [-CApath directory] [-CAfile filename]
+		回顾几个术语：PKI，CA，CRL，X.509 (v1, v2, v3)
 
-  18、httpd自带的工具程序
+		配置httpd支持https：
+			(1) 为服务器申请数字证书；
+				测试：通过私建CA发证书
+					(a) 创建私有CA
+					(b) 在服务器创建证书签署请求
+					(c) CA签证
+			(2) 配置httpd支持使用ssl，及使用的证书；
+				# yum -y install mod_ssl
 
-  	htpasswd: basic认证基于文件实现时，用到的账号密码文件生成工具；
-  	apachectl：httpd自带的服务控制脚本，支持start, stop；
-  	apxs：由httpd-devel包提供的，扩展httpd使用第三方模块的工具；
-  	rotatelogs：日志滚动工具；
-  		access.log -->
-  		access.log, access.1.log
-  		access.log, access.1.log, access.2.log
-  	suexec：
-  		访问某些有特殊权限配置的资源时，临时切换至指定用户运行；
+				配置文件：/etc/httpd/conf.d/ssl.conf
+					<VirtualHost _default_:443> #默认的443
 
-  	ab: apache benchmark
+					DocumentRoot
+					ServerName
+					SSLCertificateFile
+					SSLCertificateKeyFile
+			(3) 测试基于https访问相应的主机；
+				# openssl s_client [-connect host:port] [-cert filename] [-CApath directory] [-CAfile filename]
 
-  19、http压力测试工具
+	18、httpd自带的工具程序
+
+		htpasswd: basic认证基于文件实现时，用到的账号密码文件生成工具；
+		apachectl：httpd自带的服务控制脚本，支持start, stop；
+		apxs：由httpd-devel包提供的，扩展httpd使用第三方模块的工具；
+		rotatelogs：日志滚动工具；
+			access.log -->
+			access.log, access.1.log
+			access.log, access.1.log, access.2.log
+		suexec：
+			访问某些有特殊权限配置的资源时，临时切换至指定用户运行；
+
+		ab: apache benchmark
+
+	19、http压力测试工具
   	ab
   	webbench
   	http_load

@@ -1,0 +1,84 @@
+## bash的字符串处理工具
+
+字符串切片：
+	${var:offset:number}
+	取字符串的最右侧几个字符：${var: -lengh}
+		注意：冒号后必须有一空白字符；
+
+基于模式取子串：
+	${var#*word}：其中word可以是指定的任意字符；功能：自左而右，查找var变量所存储的字符串中，第一次出现的word, 删除字符串开头至第一次出现word字符之间的所有字符；
+	${var##*word}：同上，不过，删除的是字符串开头至最后一次由word指定的字符之间的所有内容；
+		file="/var/log/messages"
+		${file##*/}: messages
+
+	${var%word*}：其中word可以是指定的任意字符；功能：自右而左，查找var变量所存储的字符串中，第一次出现的word, 删除字符串最后一个字符向左至第一次出现word字符之间的所有字符；
+		file="/var/log/messages"
+		${file%/*}: /var/log
+
+	${var%%word*}：同上，只不过删除字符串最右侧的字符向左至最后一次出现word字符之间的所有字符；
+
+	示例：url=http://www.magedu.com:80
+		${url##*:}
+		${url%%:*}
+
+查找替换：
+	${var/pattern/substi}：查找var所表示的字符串中，第一次被pattern所匹配到的字符串，以substi替换之；
+	${var//pattern/substi}: 查找var所表示的字符串中，所有能被pattern所匹配到的字符串，以substi替换之；
+
+	${var/#pattern/substi}：查找var所表示的字符串中，行首被pattern所匹配到的字符串，以substi替换之；
+	${var/%pattern/substi}：查找var所表示的字符串中，行尾被pattern所匹配到的字符串，以substi替换之；
+
+查找并删除：
+	${var/pattern}：查找var所表示的字符串中，删除第一次被pattern所匹配到的字符串
+	${var//pattern}：
+	${var/#pattern}：
+	${var/%pattern}：
+
+字符大小写转换：
+	${var^^}：把var中的所有小写字母转换为大写；
+	${var,,}：把var中的所有大写字母转换为小写；
+
+变量赋值：
+	${var:-value}：如果var为空或未设置，那么返回value；否则，则返回var的值；
+	${var:=value}：如果var为空或未设置，那么返回value，并将value赋值给var；否则，则返回var的值；
+
+	${var:+value}：如果var不空，则返回value；
+	${var:?error_info}：如果var为空或未设置，那么返回error_info；否则，则返回var的值；
+
+为脚本程序使用配置文件：
+	(1) 定义文本文件，每行定义“name=value”
+	(2) 在脚本中source此文件即可
+
+命令：
+	mktemp命令：
+		mktemp [OPTION]... [TEMPLATE]
+			TEMPLATE: filename.XXX
+				XXX至少要出现三个；
+			OPTION：
+				-d: 创建临时目录；
+				--tmpdir=/PATH/TO/SOMEDIR：指明临时文件目录位置；
+
+	# filename=$(mktemp /tmp.text.XXX) 直接引用
+
+	install命令：
+       install [OPTION]... [-T] SOURCE DEST
+       install [OPTION]... SOURCE... DIRECTORY
+       install [OPTION]... -t DIRECTORY SOURCE...
+       install [OPTION]... -d DIRECTORY...
+       		选项：
+       			-m MODE
+       			-o OWNER
+       			-g GROUP
+
+练习：写一个脚本
+	(1) 提示用户输入一个可执行命令名称；
+	(2) 获取此命令所依赖到的所有库文件列表；
+	(3) 复制命令至某目标目录(例如/mnt/sysroot)下的对应路径下；
+		/bin/bash ==> /mnt/sysroot/bin/bash
+		/usr/bin/passwd ==> /mnt/sysroot/usr/bin/passwd
+	(4) 复制此命令依赖到的所有库文件至目标目录下的对应路径下：
+		/lib64/ld-linux-x86-64.so.2 ==> /mnt/sysroot/lib64/ld-linux-x86-64.so.2
+
+	进一步地：
+		每次复制完成一个命令后，不要退出，而是提示用户键入新的要复制的命令，并重复完成上述功能；直到用户输入quit退出；
+}

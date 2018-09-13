@@ -497,13 +497,3 @@ ProxyPassMatch：把以.php结尾的文件请求发送到php-fpm进程，php-fpm
 CentOS 7上实现LAMP：
   解决依赖关系：
     yum -y install @"Development Tools" libxml2-devel mariadb-devel bzip2-devel
-
-总结：LAMP
-  httpd
-  mariab, mysql
-  php
-
-  LNMMP
-
-  博客：fpm-php, LAMP,
-    提供几个虚拟主机：wp, pma(https), drupal

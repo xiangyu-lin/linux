@@ -150,14 +150,34 @@ Tomcat:
 					network: 部署于不同主机；
 
 		安装Tomcat：
-			官方站点：http://tomcat.apache.org
+			- 官方站点：http://tomcat.apache.org
+			- yum 源中也有
+				- yum -y install tomcat
+				- yum list all | grep java (jdk)
 
 			部署前提：
 				jdk：
 					Oracel JDK
+						https://www.oracle.com/technetwork/java/javase/downloads/jdk8-downloads-2133151.html
 					OpenJDK
+						rpm -ivh jdk...
+						vim /etc/profile.d/java.sh
+							export JAVA_HOME=/usr/java/latest
+							export PATH=$JAVA_HOME/bin/:$PATH
+						java -version
 
 			部署Tomcat：
+				cd /usr/local
+				wget ...
+				tar -xvf apache-tomcat-8.0.52.tar.gz ...
+				ln -sv apache-tomcat-8.0.52 tomcat
+
+				vim /etc/profile.d/tomcat.sh
+					export CATALINA_HOME=/usr/local/tomcat
+					export PATH=$CATALINA_HOME/bin:$PATH
+				. /etc/profile.d/tomcat.sh
+				catalina.sh version
+				catalina.sh start (用的8080端口确保没被占用)
 
 		Tomcat的目录结构：
 			bin: 脚本及启动时用到的类
@@ -236,7 +256,7 @@ Tomcat(2)
 
 	手动添加一个测试应用程序：
 		1、创建webapp特有的目录结构；
-			mkdir -pv myapp/{lib,classes,WEB-INF,META-INF}
+			[root@localhost webapps]# mkdir -pv myapp/{lib,classes,WEB-INF,META-INF}
 		2、提供webapp各文件；
 			myapp/index.jsp
 				<%@ page language="java" %>
@@ -251,7 +271,7 @@ Tomcat(2)
 				</html>
 
 	部署（deployment）webapp相关的操作：
-		deploy：部署，将webapp的源文件旋转于目标目录、配置tomcat服务器能够基于context.xml文件中定义的路径来访问此webapp; 将其特有类通过class loader装载至tomcat；
+		deploy：部署，将webapp的源文件放置于目标目录、配置tomcat服务器能够基于context.xml文件中定义的路径来访问此webapp; 将其特有类通过class loader装载至tomcat；
 			有两种方式：
 				自动部署：auto deploy
 				手动部署：
@@ -265,6 +285,14 @@ Tomcat(2)
 
 	tomcat自带的应用程序：
 		manager app: webapp管理工具
+			vim tomcat/conf/tomcat-users.xml
+				<tomcat-users>
+					<role rolename="manager-gui"/>
+					<user username="tomcat" password="s3cret" roles ="manager-gui"/>
+				</tomcat-users>
+			catalina.sh stop
+			catalina.sh start
+
 		host manager：Virtual Hosts管理工具
 
 	tomcat的主配置文件结构：
