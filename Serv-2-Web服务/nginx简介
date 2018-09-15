@@ -1,0 +1,92 @@
+## nginx 简介
+
+程序路径
+	/usr/local/nginx
+		conf/ 配置文件
+		html/ 网站根目录
+		log/ 日志文件目录
+		sbin/ 主程序目录
+
+常用管理类命令
+	/usr/local/nginx/sbin/nginx 启动
+	可以编译时指定程序目录 --sbin-path=/usr/sbin/nginx
+	或者软连接
+
+启动 重载 停止 指定配置文件启动
+	[root@xiangyu-lin ~]# nginx
+	[root@xiangyu-lin ~]# nginx -s reload
+	[root@xiangyu-lin ~]# nginx -s stop
+	[root@xiangyu-lin ~]# nginx -c /usr/local/nginx/conf/nginx.conf.default
+
+nginx进程号保存在nginx.pid中,可通过kill关闭
+	[root@xiangyu-lin ~]# cat /usr/local/nginx/logs/nginx.pid
+	11734
+	[root@xiangyu-lin ~]# kill -QUIT `cat /usr/local/nginx/logs/nginx.pid`
+
+	-QUIT 优雅的关闭，保持现有客户端连接
+	-WINCH 优雅的关闭工作进程
+	-USR2 升级程序
+	-USR1 重新打开日志文件
+	-HUB 重启应用新的配置文件
+	-TERM，INT 快速关闭
+
+---
+
+nginx 优点
+
+1.高并发连接 官方测试5W并发 实际能跑2-3W并发
+2.内存消耗少：在3W 并发连接下，开启的10个Nginx
+  进程才消耗150M 内存 （15M*10=150M）。
+3.配置文件非常简单：
+  风格跟程序一样通俗易懂
+4.成本低廉:Nginx 为开源软件，可以免费使用。
+  而购买F5 BIG IP NETScaler 等硬件负载均衡交换机
+  则需要十多万至几十万人民币。
+5.支持Rewrite重写规则：
+  能够根据域名 url的不同将http请求分到不同的后端服务器群组
+6.内置的健康检查功能：
+  如果Nginx Proxy 后端的某台Web 服务器宕机了 不会影响前端访问。
+7.节省带宽：
+  支持gzip压缩，可以添加浏览器本地缓存的Header 头
+8.稳定性高：
+  用于反向代理，宕机的概率微乎其微。
+9.模块化设计:
+  模块可以动态编译
+10.外围支持好：
+  文档全 二次开发模块较多
+11.支持热部署：
+  可以不停机重载配置文件
+12.支持事件驱动、AIO、mmap等性能优化
+
+
+离开业务不调优
+cache is king
+
+pv  两亿 每日日 page view
+active connection 100W 活动连接数
+qps 1-2 W
+
+qps 每秒的请求数
+
+MPM 是apache2 引入的一个概念，就是将结构模块化，
+把核心任务作为一个可插拔的模块，即MPM，使其能针对不同环境进行优化
+
+在这种情况下就诞生了处理模式的概念
+处理模式分为 prefork worker event
+
+prefork 适用于有突发的情况下
+  #实现了一个非线程的 预派生的web服务器
+worker
+  #事先生成多少个进程 每个进程多少个线程  全占满是饱和状态  #适合平稳的没有太大波动的业务
+event
+  #worker 模式的变种，他把服务进程从连接中分离出来，
+  在开启keepAlive场合下相对worker模式能够承受的了更高的并发负载
+
+
+  apache select 和 nginx epoll 有什么区别
+
+阻塞 blocking IO  #一直等 一个进程响应
+非阻塞 noblocking IO #不用一直等 但要经常过来看
+多路IO multiplexing #多个进程响应 #（多个炉）
+异步 asynchronous IO #处理完有通知
+事件驱动 singal driven IO
