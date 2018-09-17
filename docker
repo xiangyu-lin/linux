@@ -1,0 +1,6 @@
+
+安装
+
+	[root@localhost ~]# yum -y install docker-io
+
+在centos7中启动docker会报错 在/etc/sysconfig/docker 里面--selinux-enabled添加=false
