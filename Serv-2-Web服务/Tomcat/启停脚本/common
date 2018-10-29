@@ -1,0 +1,55 @@
+SPECIAL_CATALINA_HOME="~Nothing can be found~"
+
+#app location
+
+AL=("rpc19083:/home/tomcat/rpc-19083" "sfs19084:/home/tomcat/sfs-19084" "signature19085:/home/tomcat/signature-19085" "portal19082:/home/tomcat/portal-19082" "saferycom19081:/home/tomcat/saferycom-19081" "job19086:/home/tomcat/job-19086")
+
+scripts_pa=/home/tomcat/scripts
+
+ProjectName="FjDX"
+
+WARS="/home/tomcat/war"
+
+ip=192.168.0.78
+
+gettomcat(){
+        ps -ef |grep java |grep "$SPECIAL_CATALINA_HOME"
+}
+
+
+setENV(){
+        length=${#AL[@]}
+        for ((i=0;i<length;i++))
+        do
+                p=${AL[i]}
+                name=`echo $p | cut -d ':' -f1`
+                if [[ "$1" = "$name" ]];then
+                        SPECIAL_CATALINA_HOME=`echo $p | cut -d ':' -f2`
+                        break
+                fi
+        done
+        if [[ "$SPECIAL_CATALINA_HOME" = "~Nothing can be found~" ]];then
+                Usage
+        fi
+}
+
+Usage() {
+	echo "Usage:$0 WEBNAME"
+for ((i=0;i<${#AL[@]};i++))
+do
+        service=`echo ${AL[i]}|cut -d ':' -f1 | tr -cd "[a-z]"`
+        port=`echo ${AL[i]}|cut -d ':' -f1 | tr -cd "[0-9]"`
+        echo "$service at $port type        :$0 $service$port"
+done
+}
+
+Usages(){
+        echo "Usage: $0   [ VersionDate ] [ WEBNAME ] ";
+        echo "eg."
+for ((i=0;i<${#AL[@]};i++))
+do
+        name=`echo ${AL[i]}|cut -d ':' -f1`
+        echo "$0 20171128 $name"
+done
+}
+
