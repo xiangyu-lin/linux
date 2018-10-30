@@ -52,4 +52,3 @@ do
         echo "$0 20171128 $name"
 done
 }
-

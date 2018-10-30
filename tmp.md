@@ -1,3 +1,13 @@
+echo "Usage: $0 command [WEBNAME]"
+echo "commands:"
+echo "  start             Start tomcat"
+echo "  stop              Stop Catalina, waiting up to 5 seconds for the process to end"
+echo "  stop n            Stop Catalina, waiting up to n seconds for the process to end"
+echo "  stop -force       Stop Catalina, wait up to 5 seconds and then use kill -KILL if still running"
+echo "  stop n -force     Stop Catalina, wait up to n seconds and then use kill -KILL if still running"
+echo "  version           What version of tomcat are you running?"
+
+
 # 题目
 
 ## 简答
